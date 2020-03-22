@@ -32,6 +32,8 @@ import androidx.annotation.RequiresApi;
 public class GameView extends View {
 
 
+
+
     // add setting button using X and Y from touch listener
     @RequiresApi(api = Build.VERSION_CODES.O)
 
@@ -69,13 +71,22 @@ public class GameView extends View {
         if(action==MotionEvent.ACTION_MOVE){
         }
         else
-        if (!(Xtouch > 0 && Xtouch < 105 && Ytouch > 0 && Ytouch < 106)) {
+        if (!(Xtouch > 0 && Xtouch < 105*fx && Ytouch > 0 && Ytouch < 106*fy)&&!settingpress) {
             T++;
-            settingpress = false;
         }
 
         else {
             settingpress = true;
+            if(Xtouch>685*fx&&Xtouch<770*fx&&Ytouch>195*fy&&Ytouch<280*fy&&action==MotionEvent.ACTION_UP){
+                bm=!bm;
+                updateBK(player.getUsername(),bm);
+            }
+
+            if(Xtouch>685*fx&&Xtouch<770*fx&&Ytouch>295*fy&&Ytouch<380*fy&&action==MotionEvent.ACTION_UP){
+                se=!se;
+                updateSE(player.getUsername(),se);
+            }
+
         }
         if(T%3==0)
             flag=true;
@@ -90,14 +101,15 @@ public class GameView extends View {
     }
     Random random = new Random();
     SoundPlayer soundPlayer;
-    Boolean finish=false,recreate=false;
+    Boolean finish=false,recreate=false,done=true,se,bm;
     Animator animator;
     Player player ;
     Handler handler;
     Arrow arrow1;
     int arrowheadx,arrowheady,score=0,highscore=0;
     Runnable runnable;
-    int rotation = 10,xcoordinate=0,ycoordinate=0,timee,maxCombo,maxGoldEarned=0;
+    int rotation = 10,timee,maxCombo,maxGoldEarned=0;
+    float xcoordinate=0f,ycoordinate=0f;
     double angle=0;
     Rect rect;
     Rect rect1;
@@ -106,10 +118,12 @@ public class GameView extends View {
     Bitmap background, apple, Bow, settings,bow, bowafter, arrow,Score,gameoverback,settingback,coin;
     Point point;
     Display display;
-   int   applecorx = random. nextInt(644)+483, applecory=random.nextInt(428)+100;
+   int   applecorx = (random. nextInt(644)+483), applecory=random.nextInt(428)+100;
    int heartnum=3;
     final int Delay = 30, Speed = 55;
     int delayfinish=0;
+    float fx;
+    float fy;
     final double speedHeight = 10, Gravity = -10;
     int x = 5, ground, Helpx, Helpy, Time = 1,combo=0;
     double arrowx, arrowy, pressTime;
@@ -120,8 +134,8 @@ public class GameView extends View {
     int rotateafter;
     double z = 0;
     boolean check = true, touch = true, flag = false, up = false, first = true, settingpress = false, bound = true, maxDegree = true,angleboolean=true,finishgame=true;
-    int width, height, heartFrame = 0, bowFrame = 0, T = 1; // work
-    Bitmap[]  heart1, heart3, heart2,number,numberscore;
+    int width=1184, height=720, heartFrame = 0, bowFrame = 0, T = 1,wid,hei; // work
+    Bitmap[]  heart1, heart3, heart2,number,numberscore,boxBM,boxSE;
     View view;
     Context context;
     private MotionEvent event;
@@ -145,10 +159,17 @@ public class GameView extends View {
         display = ((Activity) getContext()).getWindowManager().getDefaultDisplay();
         point = new Point();
         display.getSize(point);
-        width = point.x;
-        height = point.y;
+        wid = point.x;
+        hei = point.y;
+        System.out.println(wid+" shar"+hei);
+        fx =(wid/1184f);
+        System.out.println(fx+" wt "+2094/1184);
+        fy=hei/720f;
+        applecorx =(int)(applecorx*fx);
+        applecory =(int)(applecory*fy);
+        System.out.println(fy+"  wt1 "+1080/720);
         ground = height - 200;
-        rect = new Rect(0, 0, width, height);
+        rect = new Rect(0, 0, wid, hei);
         rect1 = new Rect(10, 10, width, height);
         bow =BitmapFactory.decodeResource(getResources(), R.drawable.bow);
         bowafter = BitmapFactory.decodeResource(getResources(), R.drawable.bowbow);
@@ -157,11 +178,19 @@ public class GameView extends View {
         heart1 = new Bitmap[2];
         heart2 = new Bitmap[2];
         heart3 = new Bitmap[2];
+        boxBM= new Bitmap[2];
+        boxSE= new Bitmap[2];
         number=new Bitmap[10];
         numberscore=new Bitmap[10];
+        bm=player.isBK();
+        se=player.isSE();
         settings = BitmapFactory.decodeResource(getResources(), R.drawable.finalsettingsbutton);
         settingback=BitmapFactory.decodeResource(getResources(),R.drawable.settings);
         gameoverback= BitmapFactory.decodeResource(getResources(),R.drawable.gameover);
+        boxBM[0] =BitmapFactory.decodeResource(getResources(),R.drawable.emptybox);
+        boxSE[0] =BitmapFactory.decodeResource(getResources(),R.drawable.emptybox);
+        boxBM[1] =BitmapFactory.decodeResource(getResources(),R.drawable.tickedbox);
+        boxSE[1] =BitmapFactory.decodeResource(getResources(),R.drawable.tickedbox);
         number[0]=BitmapFactory.decodeResource(getResources(),R.drawable.n0);
         number[1]=BitmapFactory.decodeResource(getResources(),R.drawable.n1);
         number[2]=BitmapFactory.decodeResource(getResources(),R.drawable.n2);
@@ -191,59 +220,76 @@ public class GameView extends View {
 
         super.onDraw(canvas);
         BitmapFactory.Options options = new BitmapFactory.Options();
+
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeResource(getResources(), R.drawable.cropped, options);
         int arrowheight = options.outHeight;//12px
         int arrowwidth = options.outWidth;
         canvas.drawBitmap(background, null, rect, null);
-        canvas.drawBitmap(settings, 15, 15, null);
-        canvas.drawBitmap(Score, 180, 25, null);
+        canvas.drawBitmap(settings, ((int)15*fx), 15*fy, null);
+        canvas.drawBitmap(Score, 180*fx, 25*fy, null);
         final int distance = 60,distancescore=40; //distance between each number
         //  canvas.drawBitmap(Score2,380,25,null);
-        System.out.println(score);
+        System.out.println(fx+"  asd "+fy);
 
         switch (String.valueOf(score).length()) {
             case 1:
-                canvas.drawBitmap(number[0], 380, 15, null);
+                canvas.drawBitmap(number[0], 380*fx, 15*fy, null);
                 break;
             case 2:
-                canvas.drawBitmap(number[score / 10], 380, 15, null);
-                canvas.drawBitmap(number[0], 380 + distance, 15, null);
+                canvas.drawBitmap(number[score / 10], 380*fx, 15*fy, null);
+                canvas.drawBitmap(number[0], (380 + distance)*fx, 15*fy, null);
+
                 break;
             case 3:
-                canvas.drawBitmap(number[score / 100], 380, 15, null);
-                canvas.drawBitmap(number[(score / 10) % 10], 380 + distance, 15, null);
-                canvas.drawBitmap(number[0], 380 + distance * 2, 15, null);
+                canvas.drawBitmap(number[score / 100], 380*fx, 15*fy, null);
+                canvas.drawBitmap(number[(score / 10) % 10], (380 + distance)*fx, 15*fy, null);
+                canvas.drawBitmap(number[0], (380 + distance * 2)*fx, 15*fy, null);
                 break;
             case 4:
-                canvas.drawBitmap(number[score / 1000], 380, 15, null);
-                canvas.drawBitmap(number[(score / 100) % 10], 380 + distance, 15, null);
-                canvas.drawBitmap(number[(score / 10) % 10], 380 + distance * 2, 15, null);
-                canvas.drawBitmap(number[0], 380 + distance * 3, 15, null);
+                canvas.drawBitmap(number[score / 1000], 380*fx, 15*fy, null);
+                canvas.drawBitmap(number[(score / 100) % 10], (380 + distance)*fx, 15*fy, null);
+                canvas.drawBitmap(number[(score / 10) % 10],(380 + distance * 2)*fx, 15*fy, null);
+                canvas.drawBitmap(number[0],( 380 + distance * 3)*fx, 15*fy, null);
 
 
         }
         switch (heartnum) {
             case 3:
-                canvas.drawBitmap(heart1[0], width - 275, 20, null);
-                canvas.drawBitmap(heart2[0], width - 185, 20, null);
-                canvas.drawBitmap(heart3[0], width - 100, 20, null);
+                canvas.drawBitmap(heart1[0], (width - 275)*fx, 20*fy, null);
+                canvas.drawBitmap(heart2[0], (width - 185)*fx, 20*fy, null);
+                canvas.drawBitmap(heart3[0], (width - 100)*fx, 20*fy, null);
                 break;
             case 2:
-                canvas.drawBitmap(heart1[1], width - 275, 20, null);
-                canvas.drawBitmap(heart2[0], width - 185, 20, null);
-                canvas.drawBitmap(heart3[0], width - 100, 20, null);
+                canvas.drawBitmap(heart1[1], (width - 275)*fx, 20*fy, null);
+                canvas.drawBitmap(heart2[0], (width - 185)*fx, 20*fy, null);
+                canvas.drawBitmap(heart3[0], (width - 100)*fx, 20*fy, null);
                 break;
             case 1:
-                canvas.drawBitmap(heart1[1], width - 275, 20, null);
-                canvas.drawBitmap(heart2[1], width - 185, 20, null);
-                canvas.drawBitmap(heart3[0], width - 100, 20, null);
+                canvas.drawBitmap(heart1[1], (width - 275)*fx, 20*fy, null);
+                canvas.drawBitmap(heart2[1], (width - 185)*fx, 20*fy, null);
+                canvas.drawBitmap(heart3[0], (width - 100)*fx, 20*fy, null);
                 break;
             case 0:
-                soundPlayer.playGameOver();
                 finishgame = false;
-                canvas.drawBitmap(gameoverback, 135, 40, null);
-                canvas.drawBitmap(coin,330,259,null);
+                float value=0;
+                Matrix matrix=new Matrix();//455,322
+                matrix.postTranslate(145*fx,40*fy);
+                if(fx<1&&fy<1){
+                    matrix.postScale(fx*1.2f,fy*1.2f);
+                    value=fx*0.85f;
+                }
+                if(fx>1&&fy>1){
+                    matrix.postScale(fx*0.73f,fy*0.73f);
+                    value =fx*1.15f;
+                }
+
+                canvas.drawBitmap(gameoverback, matrix, null);
+                System.out.println(135*fx);
+                canvas.drawBitmap(coin,330*fx*1.15f,259*fy,null);
+                if(done){
+                    if(se)
+                    soundPlayer.playGameOver();
                 if(maxCombo<player.getLongestCombo())
                     maxCombo=player.getLongestCombo();
                  maxGoldEarned=score/10;
@@ -253,83 +299,104 @@ public class GameView extends View {
                 if(score<player.getHighScore())
                     highscore=player.getHighScore();
                 updatedata(player.getUsername(),new Player(player.getUsername(),player.getNumberOfGames()+1,0,maxGoldEarned,maxCombo,player.getCurrentGold()+score/10,highscore));
-                switch (String.valueOf(score).length()){
+                    done =false;}
+                switch (String.valueOf(score).length()) {
                     case 1:
-                    canvas.drawBitmap(number[0], 600 , 475, null);
-                    break;
+                        canvas.drawBitmap(number[0], 625*fx, 465*fy, null);
+                        break;
                     case 2:
-                        canvas.drawBitmap(number[score / 10], 600 , 475, null);
-                        canvas.drawBitmap(number[0], 600 + distance, 475, null);
+                        canvas.drawBitmap(number[score / 10], 625*fx, 465*fy, null);
+                        canvas.drawBitmap(number[0], (625 + distance)*fx, 465*fy, null);
                         break;
                     case 3:
-                        canvas.drawBitmap(number[score / 100], 600, 475, null);
-                        canvas.drawBitmap(number[(score / 10) % 10], 600 + distance, 475, null);
-                        canvas.drawBitmap(number[0], 600 + distance * 2, 475, null);
+                        canvas.drawBitmap(number[score / 100], 625*fx, 465*fy, null);
+                        canvas.drawBitmap(number[(score / 10) % 10], (625 + distance)*fx + distance, 465*fy, null);
+                        canvas.drawBitmap(number[0], (625 + distance*2)*fx, 465*fy, null);
                         break;
                     case 4:
-                        canvas.drawBitmap(number[score / 1000],600, 475, null);
-                        canvas.drawBitmap(number[(score / 100) % 10], 600 + distance, 475, null);
-                        canvas.drawBitmap(number[(score / 10) % 10], 600 + distance * 2, 475, null);
-                        canvas.drawBitmap(number[0], 600 + distance * 3, 475, null);
+                        canvas.drawBitmap(number[score / 1000], 625*fx, 465*fy, null);
+                        canvas.drawBitmap(number[(score / 100) % 10], (625 + distance)*fx, 465*fy, null);
+                        canvas.drawBitmap(number[(score / 10) % 10], (625 + distance*2)*fx, 465*fy, null);
+                        canvas.drawBitmap(number[0], (625 + distance*3)*fx, 465*fy, null);
                         break;
 
                 }
                 System.out.println(player.getHighScore());
                 System.out.println(highscore);
                 System.out.println(score);
+
                 switch (String.valueOf(highscore).length()){
 
                     case 1:
-                        canvas.drawBitmap(number[0], 630 , 362, null);
+                        canvas.drawBitmap(number[0], 645*fx , 362*fy, null);
                         break;
                     case 2:
-                        canvas.drawBitmap(number[highscore / 10], 630 , 362, null);
-                        canvas.drawBitmap(number[0], 630 +distance, 362, null);
+                        canvas.drawBitmap(number[highscore / 10], 645*fx  , 362*fy, null);
+                        canvas.drawBitmap(number[0], (645 + distance)*fx, 362*fy, null);
                         break;
                     case 3:
-                        canvas.drawBitmap(number[highscore / 100], 630 , 362, null);
-                        canvas.drawBitmap(number[(highscore / 10) % 10], 630 + distance, 362, null);
-                        canvas.drawBitmap(number[0], 630 + distance * 2, 362, null);
+                        canvas.drawBitmap(number[highscore / 100], 645*fx  , 362*fy, null);
+                        canvas.drawBitmap(number[(highscore / 10) % 10], (645 + distance)*fx, 362*fy, null);
+                        canvas.drawBitmap(number[0], (645 + distance * 2)*fx, 362*fy, null);
                         break;
                     case 4:
-                        canvas.drawBitmap(number[highscore / 1000],630 , 362, null);
-                        canvas.drawBitmap(number[(highscore / 100) % 10], 630 + distance, 362, null);
-                        canvas.drawBitmap(number[(highscore / 10) % 10], 630 + distance * 2, 362, null);
-                        canvas.drawBitmap(number[0], 630 + distance * 3, 362, null);
+                        canvas.drawBitmap(number[highscore / 1000],645*fx  , 362*fy, null);
+                        canvas.drawBitmap(number[(highscore / 100) % 10], (645 + distance )*fx, 362*fy, null);
+                        canvas.drawBitmap(number[(highscore / 10) % 10], (645 + distance * 2)*fx, 362*fy, null);
+                        canvas.drawBitmap(number[0], (645 + distance * 3)*fx, 362*fy, null);
                         break;
                 }
                 switch (String.valueOf(player.getCurrentGold()).length()){
-
                     case 1:
-                        canvas.drawBitmap(number[player.getCurrentGold()%10], 420 , 259, null);
+                        canvas.drawBitmap(number[player.getCurrentGold()%10], 420*value , 259*fy, null);
                         break;
                     case 2:
-                        canvas.drawBitmap(number[player.getCurrentGold() / 10], 420 , 259, null);
-                        canvas.drawBitmap(number[player.getCurrentGold()%10], 420 +distance, 259, null);
+                        canvas.drawBitmap(number[player.getCurrentGold() / 10], 420*value , 259*fy, null);
+                        canvas.drawBitmap(number[player.getCurrentGold()%10], (420 + distance)*value, 259*fy, null);
                         break;
                     case 3:
-                        canvas.drawBitmap(number[player.getCurrentGold() / 100], 420 , 259, null);
-                        canvas.drawBitmap(number[(player.getCurrentGold() / 10) % 10], 420 + distance, 259, null);
-                        canvas.drawBitmap(number[player.getCurrentGold()%10], 420 + distance * 2, 259, null);
+                        canvas.drawBitmap(number[player.getCurrentGold() / 100], 420*value, 259*fy, null);
+                        canvas.drawBitmap(number[(player.getCurrentGold() / 10) % 10], (420 + distance)*value, 259*fy, null);
+                        canvas.drawBitmap(number[player.getCurrentGold()%10], (420 + distance * 2)*value, 259*fy, null);
                         break;
                     case 4:
-                        canvas.drawBitmap(number[player.getCurrentGold() / 1000],420 , 259, null);
-                        canvas.drawBitmap(number[(player.getCurrentGold() / 100) % 10], 420 + distance, 259, null);
-                        canvas.drawBitmap(number[(player.getCurrentGold() / 10) % 10], 420 + distance * 2, 259, null);
-                        canvas.drawBitmap(number[player.getCurrentGold()%10], 420 + distance * 3, 259, null);
+                        canvas.drawBitmap(number[player.getCurrentGold() / 1000],420*value , 259*fy, null);
+                        canvas.drawBitmap(number[(player.getCurrentGold() / 100) % 10], (420 + distance)*value, 259*fy, null);
+                        canvas.drawBitmap(number[(player.getCurrentGold() / 10) % 10], (420 + distance * 2)*value, 259*fy, null);
+                        canvas.drawBitmap(number[player.getCurrentGold()%10], (420 + distance * 3)*value, 259*fy, null);
                         break;
                 }
                 break;
+
         }
-        if(!settingpress){
+        System.out.println(settingpress);
+        if(settingpress){
+            Matrix matrix=new Matrix();//455,322
+            matrix.postTranslate(130*fx,25);
+            if(fx!=1&&fy!=1)
+            matrix.postScale(fx*0.75f,fy*0.75f);
+            canvas.drawBitmap(settingback,matrix, null);
+            System.out.println(bm+"  "+se);
+            if(player.isBK()){
+                canvas.drawBitmap(boxBM[1],690*fx,205*fy,null);
+            }
+            else{
+                canvas.drawBitmap(boxBM[0],690*fx,205*fy,null);
+            }
+            if(player.isSE())
+                canvas.drawBitmap(boxBM[1],690*fx,318*fy,null);
+            else{
+                canvas.drawBitmap(boxBM[0],690*fx,318*fy,null);
+            }
 
         }
         Random random = new Random();
         if (finishgame) {
+            if(!settingpress){
             if (!((arrowheady > applecory - 30 && arrowheady < applecory + 60) && (arrowheadx > applecorx - 25 && arrowheadx < applecorx + 55)) && appleboolean) {
                 canvas.drawBitmap(apple, applecorx, applecory, null);
             } else {
-                if (appleboolean == true) {
+                if (appleboolean == true&&se) {
                     soundPlayer.playHitSound();
                 }
                 appleboolean = false;
@@ -356,9 +423,9 @@ public class GameView extends View {
                         rotation -= 3;
                     }
                 } else {
-                    matrix.postRotate(rotation, bow.getWidth() / 2, bow.getHeight() / 2);
+                    matrix.postRotate(rotation, (bow.getWidth() / 2), bow.getHeight() / 2);
                 }
-                matrix.postTranslate(width / 9 - bow.getWidth() / 2, height * 16 / 32 - bow.getHeight() / 2);
+                matrix.postTranslate((width / 9 - bow.getWidth() / 2)*fx, (height * 16 / 32 - bow.getHeight() / 2)*fy);
                 canvas.drawBitmap(bow, matrix, null);
             }
 
@@ -388,10 +455,10 @@ public class GameView extends View {
 
                 Matrix matrixafter = new Matrix();
                 matrixafter.postRotate(rotateafter, bow.getWidth() / 2, bow.getHeight() / 2);
-                matrixafter.postTranslate(width / 9 - bow.getWidth() / 2, height * 16 / 32 - bow.getHeight() / 2);
+                matrixafter.postTranslate((width / 9 - bow.getWidth() / 2)*fx, (height * 16 / 32 - bow.getHeight() / 2)*fy);
                 canvas.drawBitmap(bowafter, matrixafter, null);
 
-                arrow1 = new Arrow(Time, yspeed, xspeed, arrow, width, height, arrow.getWidth(), arrow.getHeight(), canvas.getHeight() - arrowheight, canvas.getWidth() - arrowwidth, width / 9 - arrow.getWidth() / 2, (height - arrow.getHeight()) / 2, true, false, false);
+                arrow1 = new Arrow(Time, yspeed, xspeed, arrow, width, height, arrow.getWidth(), arrow.getHeight(), canvas.getHeight() - arrowheight, canvas.getWidth() - arrowwidth,( width / 9 - arrow.getWidth() / 2)*fx, ((height - arrow.getHeight()) / 2)*fy, true, false, false,fx,fy);
 
                 if (arrow1.getX() && arrow1.getY()) {
                     arrow1.setAb(true);
@@ -437,7 +504,7 @@ public class GameView extends View {
                     finish = true;
                     if (arrow1.isA()) {
                         xcoordinate = arrow1.x;
-                        ycoordinate = canvas.getHeight() - arrowheight - 110;
+                        ycoordinate = (height- arrowheight - 110)*fy;
                     } else {
 
 
@@ -446,8 +513,8 @@ public class GameView extends View {
                             xcoordinate = canvas.getWidth() - arrowwidth - 50;
                         } else {
 
-                            int ydiff = Math.abs(ycoordinate - canvas.getHeight() - arrowheight - 110);
-                            int xdiff = Math.abs(xcoordinate - canvas.getWidth() - arrowwidth - 50);
+                            float ydiff = Math.abs(ycoordinate - canvas.getHeight() - arrowheight - 110);
+                            float xdiff = Math.abs(xcoordinate - canvas.getWidth() - arrowwidth - 50);
                             if (ydiff > xdiff) {
                                 xcoordinate = canvas.getWidth() - arrowwidth - 50;
                                 if (firsttime && ydiff > 100) {
@@ -470,8 +537,8 @@ public class GameView extends View {
                         }
                     }
                 }
-                arrowheady = arrow1.y + (int) (2 * Math.sqrt(Math.pow(56, 2) + Math.pow(19, 2)) * Math.sin(Math.toRadians(arrow1.getAngle())));
-                arrowheadx = arrow1.x + (int) (2 * Math.sqrt(Math.pow(56, 2) + Math.pow(19, 2)) * Math.cos(Math.toRadians(arrow1.getAngle())));
+                arrowheady = (int)(arrow1.y + (int) (2 * Math.sqrt(Math.pow(56, 2) + Math.pow(19, 2)) * Math.sin(Math.toRadians(arrow1.getAngle()))));
+                arrowheadx = (int) (arrow1.x + (int) (2 * Math.sqrt(Math.pow(56, 2) + Math.pow(19, 2)) * Math.cos(Math.toRadians(arrow1.getAngle()))));
 
 
                 Time += 1;
@@ -480,6 +547,7 @@ public class GameView extends View {
                 delayfinish++;
                 if (delayfinish == 4) {
                     if (appleboolean){
+                        if(heartnum!=0)
                         heartnum--;
                         combo=0;
                     }
@@ -498,8 +566,8 @@ public class GameView extends View {
                     ycoordinate = 0;
                     double angle = 0;
                     timeInMilliseconds = 0;
-                    applecorx = random.nextInt(644) + 483;
-                    applecory = random.nextInt(428) + 100;
+                    applecorx = (int)(fx*(random.nextInt(644) + 483));
+                    applecory = (int)(fy*random.nextInt(428) + 100);
                     delayfinish = 0;
                     x = 5;
                     Time = 1;
@@ -519,9 +587,11 @@ public class GameView extends View {
 
                 }
             }
-            handler.postDelayed(runnable, Delay);
+
 
         }
+    }
+        handler.postDelayed(runnable, Delay);
     }
     private void updatedata(String key ,Player player1 ) {
         player.setCurrentGold(player1.getCurrentGold());
@@ -530,6 +600,15 @@ public class GameView extends View {
         player.setMostGoldEarnedInSingleGame(player1.getMostGoldEarnedInSingleGame());
         player.setNumberOfGames(player1.getNumberOfGames());
         player.setHighScore(player1.getHighScore());
+        PlayerInfo.child(key).setValue(player);
+    }
+    private void updateSE(String key ,boolean SE ) {
+        player.setSE(SE);
+        PlayerInfo.child(key).setValue(player);
+        System.out.println("seee"+player.isSE());
+    }
+    private void updateBK(String key ,boolean BK ) {
+        player.setBK(BK);
         PlayerInfo.child(key).setValue(player);
     }
 }

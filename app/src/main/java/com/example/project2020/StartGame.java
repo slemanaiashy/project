@@ -33,7 +33,7 @@ public class StartGame extends Activity {
         //                           s.putExtra("longestcombo",player1.getLongestCombo());
         //                           s.putExtra("currentgold",player1.getCurrentGold());
         if(i.getExtras().getBoolean("login")){
-      Player player=new Player(i.getExtras().getString("username"),i.getExtras().getString("password"),i.getExtras().getString("email"),i.getExtras().getInt("gamenum"),i.getExtras().getInt("longestgame"),i.getExtras().getInt("mostgoldinasinglegame"),i.getExtras().getInt("longestcombo"),i.getExtras().getInt("currentgold"),i.getExtras().getInt("highscore"));
+      Player player=new Player(i.getExtras().getString("username"),i.getExtras().getString("password"),i.getExtras().getString("email"),i.getExtras().getInt("gamenum"),i.getExtras().getInt("longestgame"),i.getExtras().getInt("mostgoldinasinglegame"),i.getExtras().getInt("longestcombo"),i.getExtras().getInt("currentgold"),i.getExtras().getInt("highscore"),i.getExtras().getBoolean("BK"),i.getExtras().getBoolean("SE"));
         gameView = new GameView(this,player);}
         else{
             gameView=new GameView(this,new Player(i.getExtras().getString("username"),i.getExtras().getString("password"),i.getExtras().getString("email")));

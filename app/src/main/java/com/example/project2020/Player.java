@@ -11,6 +11,8 @@ public class Player {
     int longestCombo;
     int currentGold;
     int highScore;
+    boolean SE;
+    boolean BK;
 
    public Player(String username, String password) {
         Password = password;
@@ -30,6 +32,8 @@ public class Player {
         longestCombo=0;
         currentGold=0;
         highScore=0;
+        BK=true;
+        SE=true;
     }
     public Player(String username, String password, String email, int numberOfGames, int logestGame, int currentGold,int highScore) {
         Username = username;
@@ -58,7 +62,23 @@ public class Player {
         this.highScore = highScore;
     }
 
-    public Player(String username, String password, String email, int numberOfGames, int logestGame, int mostGoldEarnedInSingleGame, int longestCombo, int currentGold, int highScore) {
+    public boolean isSE() {
+        return SE;
+    }
+
+    public void setSE(boolean SE) {
+        this.SE = SE;
+    }
+
+    public boolean isBK() {
+        return BK;
+    }
+
+    public void setBK(boolean BK) {
+        this.BK = BK;
+    }
+
+    public Player(String username, String password, String email, int numberOfGames, int logestGame, int mostGoldEarnedInSingleGame, int longestCombo, int currentGold, int highScore, boolean BK, boolean SE) {
          Username = username;
          Password = password;
          Email = email;
@@ -68,6 +88,8 @@ public class Player {
          this.longestCombo = longestCombo;
          this.currentGold = currentGold;
          this.highScore=highScore;
+         this.SE=SE;
+         this.BK=BK;
      }
 
     public String getUsername() {

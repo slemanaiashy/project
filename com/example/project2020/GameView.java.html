@@ -1,0 +1,558 @@
+<html>
+<head>
+<title>GameView.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #000080; font-weight: bold;}
+.s1 { color: #000000;}
+.s2 { color: #808080; font-style: italic;}
+.s3 { color: #008000; font-weight: bold;}
+.s4 { color: #0000ff;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+GameView.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span>com.example.project2020;
+
+
+<span class="s0">import </span>android.animation.Animator;
+<span class="s0">import </span>android.animation.ValueAnimator;
+<span class="s0">import </span>android.app.Activity;
+<span class="s0">import </span>android.content.Context;
+<span class="s0">import </span>android.content.Intent;
+<span class="s0">import </span>android.content.SharedPreferences;
+<span class="s0">import </span>android.graphics.Bitmap;
+<span class="s0">import </span>android.graphics.BitmapFactory;
+<span class="s0">import </span>android.graphics.Canvas;
+<span class="s0">import </span>android.graphics.Matrix;
+<span class="s0">import </span>android.graphics.Point;
+<span class="s0">import </span>android.graphics.Rect;
+<span class="s0">import </span>android.os.Build;
+<span class="s0">import </span>android.os.Handler;
+<span class="s0">import </span>android.view.Display;
+<span class="s0">import </span>android.view.MotionEvent;
+<span class="s0">import </span>android.view.View;
+<span class="s0">import </span>android.widget.Switch;
+
+
+<span class="s0">import </span>com.google.firebase.database.DatabaseReference;
+<span class="s0">import </span>com.google.firebase.database.FirebaseDatabase;
+
+<span class="s0">import </span>java.util.Random;
+
+<span class="s0">import </span>androidx.annotation.RequiresApi;
+
+
+<span class="s0">public class </span>GameView <span class="s0">extends </span>View {
+
+
+    <span class="s2">// add setting button using X and Y from touch listener</span>
+    @RequiresApi(api = Build.VERSION_CODES.O)
+
+    <span class="s0">public void </span>onClick(View view) {
+        view.requestPointerCapture();
+    }
+
+    <span class="s0">public boolean </span>onCapturedPointerEvent(MotionEvent motionEvent) {
+        <span class="s0">float </span>verticalOffset = motionEvent.getY();
+        System.out.println(verticalOffset);
+        <span class="s0">return true</span>;
+    }
+
+    <span class="s0">public boolean </span>onCapturedPointer(View view, MotionEvent motionEvent) {
+        <span class="s2">// Get the coordinates required by your app</span>
+
+        <span class="s0">float </span>horizontalOffset = motionEvent.getX();
+        System.out.println(horizontalOffset);
+        <span class="s0">return true</span>;
+    }
+
+    @Override
+    <span class="s0">public boolean </span>onTouchEvent (MotionEvent event){
+        <span class="s0">float </span>Ytouch = event.getY();<span class="s2">// y</span>
+        <span class="s0">float </span>Xtouch = event.getX();<span class="s2">//x</span>
+        System.out.println(<span class="s3">&quot;Xtouch&quot;</span>+Xtouch);
+        System.out.println(<span class="s3">&quot;Ytouch&quot;</span>+Ytouch);
+        <span class="s0">long </span>eventDuration = android.os.SystemClock.elapsedRealtime() - event.getDownTime();
+
+        <span class="s0">if </span>(T % <span class="s4">4 </span>== <span class="s4">0 </span>&amp;&amp; T != <span class="s4">1</span>) {
+            z = (<span class="s0">int</span>) eventDuration;
+            up = <span class="s0">true</span>;
+        }
+        <span class="s0">int </span>action = event.getAction();
+        <span class="s0">if</span>(action==MotionEvent.ACTION_MOVE){
+        }
+        <span class="s0">else</span>
+        if (!(Xtouch &gt; <span class="s4">0 </span>&amp;&amp; Xtouch &lt; <span class="s4">105 </span>&amp;&amp; Ytouch &gt; <span class="s4">0 </span>&amp;&amp; Ytouch &lt; <span class="s4">106</span>)) {
+            T++;
+            settingpress = <span class="s0">false</span>;
+        }
+
+        <span class="s0">else </span>{
+            settingpress = <span class="s0">true</span>;
+        }
+        <span class="s0">if</span>(T%<span class="s4">3</span>==<span class="s4">0</span>)
+            flag=<span class="s0">true</span>;
+        <span class="s0">if </span>(action == MotionEvent.ACTION_UP &amp;&amp; !settingpress&amp;&amp;T%<span class="s4">5</span>==<span class="s4">0</span>) {
+            touch = <span class="s0">false</span>;
+
+        }
+
+        <span class="s0">return true</span>;
+
+
+    }
+    Random random = <span class="s0">new </span>Random();
+    SoundPlayer soundPlayer;
+    Boolean finish=<span class="s0">false</span>,recreate=<span class="s0">false</span>;
+    Animator animator;
+    Player player ;
+    Handler handler;
+    Arrow arrow1;
+    <span class="s0">int </span>arrowheadx,arrowheady,score=<span class="s4">0</span>,highscore=<span class="s4">0</span>;
+    Runnable runnable;
+    <span class="s0">int </span>rotation = <span class="s4">10</span>,xcoordinate=<span class="s4">0</span>,ycoordinate=<span class="s4">0</span>,timee,maxCombo,maxGoldEarned=<span class="s4">0</span>;
+    <span class="s0">double </span>angle=<span class="s4">0</span>;
+    Rect rect;
+    Rect rect1;
+    <span class="s0">long </span>startTime, timeInMilliseconds = <span class="s4">0</span>;
+    Handler customHandler = <span class="s0">new </span>Handler();
+    Bitmap background, apple, Bow, settings,bow, bowafter, arrow,Score,gameoverback,settingback,coin;
+    Point point;
+    Display display;
+   <span class="s0">int   </span>applecorx = random. nextInt(<span class="s4">644</span>)+<span class="s4">483</span>, applecory=random.nextInt(<span class="s4">428</span>)+<span class="s4">100</span>;
+   <span class="s0">int </span>heartnum=<span class="s4">3</span>;
+    <span class="s0">final int </span>Delay = <span class="s4">30</span>, Speed = <span class="s4">55</span>;
+    <span class="s0">int </span>delayfinish=<span class="s4">0</span>;
+    <span class="s0">final double </span>speedHeight = <span class="s4">10</span>, Gravity = -<span class="s4">10</span>;
+    <span class="s0">int </span>x = <span class="s4">5</span>, ground, Helpx, Helpy, Time = <span class="s4">1</span>,combo=<span class="s4">0</span>;
+    <span class="s0">double </span>arrowx, arrowy, pressTime;
+    <span class="s0">boolean </span>appleboolean=<span class="s0">true</span>,firsttime=<span class="s0">true</span>;
+    FirebaseDatabase database;
+    DatabaseReference PlayerInfo;
+    <span class="s0">double </span>yspeed=<span class="s4">0</span>, xspeed=<span class="s4">0</span>, yEquation, xEquation;
+    <span class="s0">int </span>rotateafter;
+    <span class="s0">double </span>z = <span class="s4">0</span>;
+    <span class="s0">boolean </span>check = <span class="s0">true</span>, touch = <span class="s0">true</span>, flag = <span class="s0">false</span>, up = <span class="s0">false</span>, first = <span class="s0">true</span>, settingpress = <span class="s0">false</span>, bound = <span class="s0">true</span>, maxDegree = <span class="s0">true</span>,angleboolean=<span class="s0">true</span>,finishgame=<span class="s0">true</span>;
+    <span class="s0">int </span>width, height, heartFrame = <span class="s4">0</span>, bowFrame = <span class="s4">0</span>, T = <span class="s4">1</span>; <span class="s2">// work</span>
+    Bitmap[]  heart1, heart3, heart2,number,numberscore;
+    View view;
+    Context context;
+    <span class="s0">private </span>MotionEvent event;
+    Intent intent12;
+    <span class="s0">public </span>GameView(Context context,Player player) {
+        <span class="s0">super</span>(context);
+        <span class="s0">this</span>.context=context;
+        soundPlayer=<span class="s0">new </span>SoundPlayer(context);
+        handler = <span class="s0">new </span>Handler();
+        <span class="s0">this</span>.player=player;
+        database = FirebaseDatabase.getInstance();
+        PlayerInfo= database.getReference(<span class="s3">&quot;PlayersInfo&quot;</span>);
+        runnable = <span class="s0">new </span>Runnable() {
+            @Override
+            <span class="s0">public void </span>run() {
+                invalidate();
+            }
+        };
+        Arrow arrow1;
+        background = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+        display = ((Activity) getContext()).getWindowManager().getDefaultDisplay();
+        point = <span class="s0">new </span>Point();
+        display.getSize(point);
+        width = point.x;
+        height = point.y;
+        ground = height - <span class="s4">200</span>;
+        rect = <span class="s0">new </span>Rect(<span class="s4">0</span>, <span class="s4">0</span>, width, height);
+        rect1 = <span class="s0">new </span>Rect(<span class="s4">10</span>, <span class="s4">10</span>, width, height);
+        bow =BitmapFactory.decodeResource(getResources(), R.drawable.bow);
+        bowafter = BitmapFactory.decodeResource(getResources(), R.drawable.bowbow);
+        arrow =  BitmapFactory.decodeResource(getResources(), R.drawable.cropped);
+        Score = BitmapFactory.decodeResource(getResources(),R.drawable.score);
+        heart1 = <span class="s0">new </span>Bitmap[<span class="s4">2</span>];
+        heart2 = <span class="s0">new </span>Bitmap[<span class="s4">2</span>];
+        heart3 = <span class="s0">new </span>Bitmap[<span class="s4">2</span>];
+        number=<span class="s0">new </span>Bitmap[<span class="s4">10</span>];
+        numberscore=<span class="s0">new </span>Bitmap[<span class="s4">10</span>];
+        settings = BitmapFactory.decodeResource(getResources(), R.drawable.finalsettingsbutton);
+        settingback=BitmapFactory.decodeResource(getResources(),R.drawable.settings);
+        gameoverback= BitmapFactory.decodeResource(getResources(),R.drawable.gameover);
+        number[<span class="s4">0</span>]=BitmapFactory.decodeResource(getResources(),R.drawable.n0);
+        number[<span class="s4">1</span>]=BitmapFactory.decodeResource(getResources(),R.drawable.n1);
+        number[<span class="s4">2</span>]=BitmapFactory.decodeResource(getResources(),R.drawable.n2);
+        number[<span class="s4">3</span>]=BitmapFactory.decodeResource(getResources(),R.drawable.n3);
+        number[<span class="s4">4</span>]=BitmapFactory.decodeResource(getResources(),R.drawable.n4);
+        number[<span class="s4">5</span>]=BitmapFactory.decodeResource(getResources(),R.drawable.n5);
+        number[<span class="s4">6</span>]=BitmapFactory.decodeResource(getResources(),R.drawable.n6);
+        number[<span class="s4">7</span>]=BitmapFactory.decodeResource(getResources(),R.drawable.n7);
+        number[<span class="s4">8</span>]=BitmapFactory.decodeResource(getResources(),R.drawable.n8);
+        number[<span class="s4">9</span>]=BitmapFactory.decodeResource(getResources(),R.drawable.n9);
+        coin = BitmapFactory.decodeResource(getResources(),R.drawable.coin);
+        heart1[<span class="s4">0</span>] = BitmapFactory.decodeResource(getResources(), R.drawable.fullheart);
+        heart2[<span class="s4">0</span>] = BitmapFactory.decodeResource(getResources(), R.drawable.fullheart);
+        heart3[<span class="s4">0</span>] = BitmapFactory.decodeResource(getResources(), R.drawable.fullheart);
+        heart1[<span class="s4">1</span>] = BitmapFactory.decodeResource(getResources(), R.drawable.emptyheart);
+        heart2[<span class="s4">1</span>] = BitmapFactory.decodeResource(getResources(), R.drawable.emptyheart);
+        heart3[<span class="s4">1</span>] = BitmapFactory.decodeResource(getResources(), R.drawable.emptyheart);
+        apple = BitmapFactory.decodeResource(getResources(), R.drawable.apple);
+    }
+
+  <span class="s2">/*  public GameView  recreate(){ 
+        GameView gameView = new GameView(context); 
+        return gameView; 
+    }*/</span>
+
+    <span class="s0">protected void </span>onDraw(Canvas canvas) {
+
+        <span class="s0">super</span>.onDraw(canvas);
+        BitmapFactory.Options options = <span class="s0">new </span>BitmapFactory.Options();
+        options.inJustDecodeBounds = <span class="s0">true</span>;
+        BitmapFactory.decodeResource(getResources(), R.drawable.cropped, options);
+        <span class="s0">int </span>arrowheight = options.outHeight;<span class="s2">//12px</span>
+        <span class="s0">int </span>arrowwidth = options.outWidth;
+        canvas.drawBitmap(background, <span class="s0">null</span>, rect, <span class="s0">null</span>);
+        canvas.drawBitmap(settings, <span class="s4">15</span>, <span class="s4">15</span>, <span class="s0">null</span>);
+        canvas.drawBitmap(Score, <span class="s4">180</span>, <span class="s4">25</span>, <span class="s0">null</span>);
+        <span class="s0">final int </span>distance = <span class="s4">60</span>,distancescore=<span class="s4">40</span>; <span class="s2">//distance between each number</span>
+        //  canvas.drawBitmap(Score2,380,25,null);
+        System.out.println(score);
+
+        <span class="s0">switch </span>(String.valueOf(score).length()) {
+            <span class="s0">case </span><span class="s4">1</span>:
+                canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">380</span>, <span class="s4">15</span>, <span class="s0">null</span>);
+                <span class="s0">break</span>;
+            <span class="s0">case </span><span class="s4">2</span>:
+                canvas.drawBitmap(number[score / <span class="s4">10</span>], <span class="s4">380</span>, <span class="s4">15</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">380 </span>+ distance, <span class="s4">15</span>, <span class="s0">null</span>);
+                <span class="s0">break</span>;
+            <span class="s0">case </span><span class="s4">3</span>:
+                canvas.drawBitmap(number[score / <span class="s4">100</span>], <span class="s4">380</span>, <span class="s4">15</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(number[(score / <span class="s4">10</span>) % <span class="s4">10</span>], <span class="s4">380 </span>+ distance, <span class="s4">15</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">380 </span>+ distance * <span class="s4">2</span>, <span class="s4">15</span>, <span class="s0">null</span>);
+                <span class="s0">break</span>;
+            <span class="s0">case </span><span class="s4">4</span>:
+                canvas.drawBitmap(number[score / <span class="s4">1000</span>], <span class="s4">380</span>, <span class="s4">15</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(number[(score / <span class="s4">100</span>) % <span class="s4">10</span>], <span class="s4">380 </span>+ distance, <span class="s4">15</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(number[(score / <span class="s4">10</span>) % <span class="s4">10</span>], <span class="s4">380 </span>+ distance * <span class="s4">2</span>, <span class="s4">15</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">380 </span>+ distance * <span class="s4">3</span>, <span class="s4">15</span>, <span class="s0">null</span>);
+
+
+        }
+        <span class="s0">switch </span>(heartnum) {
+            <span class="s0">case </span><span class="s4">3</span>:
+                canvas.drawBitmap(heart1[<span class="s4">0</span>], width - <span class="s4">275</span>, <span class="s4">20</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(heart2[<span class="s4">0</span>], width - <span class="s4">185</span>, <span class="s4">20</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(heart3[<span class="s4">0</span>], width - <span class="s4">100</span>, <span class="s4">20</span>, <span class="s0">null</span>);
+                <span class="s0">break</span>;
+            <span class="s0">case </span><span class="s4">2</span>:
+                canvas.drawBitmap(heart1[<span class="s4">1</span>], width - <span class="s4">275</span>, <span class="s4">20</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(heart2[<span class="s4">0</span>], width - <span class="s4">185</span>, <span class="s4">20</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(heart3[<span class="s4">0</span>], width - <span class="s4">100</span>, <span class="s4">20</span>, <span class="s0">null</span>);
+                <span class="s0">break</span>;
+            <span class="s0">case </span><span class="s4">1</span>:
+                canvas.drawBitmap(heart1[<span class="s4">1</span>], width - <span class="s4">275</span>, <span class="s4">20</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(heart2[<span class="s4">1</span>], width - <span class="s4">185</span>, <span class="s4">20</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(heart3[<span class="s4">0</span>], width - <span class="s4">100</span>, <span class="s4">20</span>, <span class="s0">null</span>);
+                <span class="s0">break</span>;
+            <span class="s0">case </span><span class="s4">0</span>:
+                soundPlayer.playGameOver();
+                finishgame = <span class="s0">false</span>;
+                canvas.drawBitmap(gameoverback, <span class="s4">135</span>, <span class="s4">40</span>, <span class="s0">null</span>);
+                canvas.drawBitmap(coin,<span class="s4">330</span>,<span class="s4">259</span>,<span class="s0">null</span>);
+                <span class="s0">if</span>(maxCombo&lt;player.getLongestCombo())
+                    maxCombo=player.getLongestCombo();
+                 maxGoldEarned=score/<span class="s4">10</span>;
+                <span class="s0">if</span>(score/<span class="s4">10</span>&lt;player.getMostGoldEarnedInSingleGame())
+                    maxGoldEarned=player.getMostGoldEarnedInSingleGame();
+                highscore=score;
+                <span class="s0">if</span>(score&lt;player.getHighScore())
+                    highscore=player.getHighScore();
+                updatedata(player.getUsername(),<span class="s0">new </span>Player(player.getUsername(),player.getNumberOfGames()+<span class="s4">1</span>,<span class="s4">0</span>,maxGoldEarned,maxCombo,player.getCurrentGold()+score/<span class="s4">10</span>,highscore));
+                <span class="s0">switch </span>(String.valueOf(score).length()){
+                    <span class="s0">case </span><span class="s4">1</span>:
+                    canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">600 </span>, <span class="s4">475</span>, <span class="s0">null</span>);
+                    <span class="s0">break</span>;
+                    <span class="s0">case </span><span class="s4">2</span>:
+                        canvas.drawBitmap(number[score / <span class="s4">10</span>], <span class="s4">600 </span>, <span class="s4">475</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">600 </span>+ distance, <span class="s4">475</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+                    <span class="s0">case </span><span class="s4">3</span>:
+                        canvas.drawBitmap(number[score / <span class="s4">100</span>], <span class="s4">600</span>, <span class="s4">475</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[(score / <span class="s4">10</span>) % <span class="s4">10</span>], <span class="s4">600 </span>+ distance, <span class="s4">475</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">600 </span>+ distance * <span class="s4">2</span>, <span class="s4">475</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+                    <span class="s0">case </span><span class="s4">4</span>:
+                        canvas.drawBitmap(number[score / <span class="s4">1000</span>],<span class="s4">600</span>, <span class="s4">475</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[(score / <span class="s4">100</span>) % <span class="s4">10</span>], <span class="s4">600 </span>+ distance, <span class="s4">475</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[(score / <span class="s4">10</span>) % <span class="s4">10</span>], <span class="s4">600 </span>+ distance * <span class="s4">2</span>, <span class="s4">475</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">600 </span>+ distance * <span class="s4">3</span>, <span class="s4">475</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+
+                }
+                System.out.println(player.getHighScore());
+                System.out.println(highscore);
+                System.out.println(score);
+                <span class="s0">switch </span>(String.valueOf(highscore).length()){
+
+                    <span class="s0">case </span><span class="s4">1</span>:
+                        canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">630 </span>, <span class="s4">362</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+                    <span class="s0">case </span><span class="s4">2</span>:
+                        canvas.drawBitmap(number[highscore / <span class="s4">10</span>], <span class="s4">630 </span>, <span class="s4">362</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">630 </span>+distance, <span class="s4">362</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+                    <span class="s0">case </span><span class="s4">3</span>:
+                        canvas.drawBitmap(number[highscore / <span class="s4">100</span>], <span class="s4">630 </span>, <span class="s4">362</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[(highscore / <span class="s4">10</span>) % <span class="s4">10</span>], <span class="s4">630 </span>+ distance, <span class="s4">362</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">630 </span>+ distance * <span class="s4">2</span>, <span class="s4">362</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+                    <span class="s0">case </span><span class="s4">4</span>:
+                        canvas.drawBitmap(number[highscore / <span class="s4">1000</span>],<span class="s4">630 </span>, <span class="s4">362</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[(highscore / <span class="s4">100</span>) % <span class="s4">10</span>], <span class="s4">630 </span>+ distance, <span class="s4">362</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[(highscore / <span class="s4">10</span>) % <span class="s4">10</span>], <span class="s4">630 </span>+ distance * <span class="s4">2</span>, <span class="s4">362</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[<span class="s4">0</span>], <span class="s4">630 </span>+ distance * <span class="s4">3</span>, <span class="s4">362</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+                }
+                <span class="s0">switch </span>(String.valueOf(player.getCurrentGold()).length()){
+
+                    <span class="s0">case </span><span class="s4">1</span>:
+                        canvas.drawBitmap(number[player.getCurrentGold()%<span class="s4">10</span>], <span class="s4">420 </span>, <span class="s4">259</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+                    <span class="s0">case </span><span class="s4">2</span>:
+                        canvas.drawBitmap(number[player.getCurrentGold() / <span class="s4">10</span>], <span class="s4">420 </span>, <span class="s4">259</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[player.getCurrentGold()%<span class="s4">10</span>], <span class="s4">420 </span>+distance, <span class="s4">259</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+                    <span class="s0">case </span><span class="s4">3</span>:
+                        canvas.drawBitmap(number[player.getCurrentGold() / <span class="s4">100</span>], <span class="s4">420 </span>, <span class="s4">259</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[(player.getCurrentGold() / <span class="s4">10</span>) % <span class="s4">10</span>], <span class="s4">420 </span>+ distance, <span class="s4">259</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[player.getCurrentGold()%<span class="s4">10</span>], <span class="s4">420 </span>+ distance * <span class="s4">2</span>, <span class="s4">259</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+                    <span class="s0">case </span><span class="s4">4</span>:
+                        canvas.drawBitmap(number[player.getCurrentGold() / <span class="s4">1000</span>],<span class="s4">420 </span>, <span class="s4">259</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[(player.getCurrentGold() / <span class="s4">100</span>) % <span class="s4">10</span>], <span class="s4">420 </span>+ distance, <span class="s4">259</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[(player.getCurrentGold() / <span class="s4">10</span>) % <span class="s4">10</span>], <span class="s4">420 </span>+ distance * <span class="s4">2</span>, <span class="s4">259</span>, <span class="s0">null</span>);
+                        canvas.drawBitmap(number[player.getCurrentGold()%<span class="s4">10</span>], <span class="s4">420 </span>+ distance * <span class="s4">3</span>, <span class="s4">259</span>, <span class="s0">null</span>);
+                        <span class="s0">break</span>;
+                }
+                <span class="s0">break</span>;
+        }
+        <span class="s0">if</span>(!settingpress){
+
+        }
+        Random random = <span class="s0">new </span>Random();
+        <span class="s0">if </span>(finishgame) {
+            <span class="s0">if </span>(!((arrowheady &gt; applecory - <span class="s4">30 </span>&amp;&amp; arrowheady &lt; applecory + <span class="s4">60</span>) &amp;&amp; (arrowheadx &gt; applecorx - <span class="s4">25 </span>&amp;&amp; arrowheadx &lt; applecorx + <span class="s4">55</span>)) &amp;&amp; appleboolean) {
+                canvas.drawBitmap(apple, applecorx, applecory, <span class="s0">null</span>);
+            } <span class="s0">else </span>{
+                <span class="s0">if </span>(appleboolean == <span class="s0">true</span>) {
+                    soundPlayer.playHitSound();
+                }
+                appleboolean = <span class="s0">false</span>;
+            }
+      <span class="s2">/* canvas.drawBitmap(black,width/3+41,height/2+44,null); 
+       canvas.drawBitmap(black,width /3,height/2+44,null); 
+      canvas.drawBitmap(black,width/3,height / 2,null); 
+        canvas.drawBitmap(black,width/3+41,height / 2,null);*/</span>
+            <span class="s0">if </span>(touch == <span class="s0">true</span>) {
+                Matrix matrix = <span class="s0">new </span>Matrix();
+                <span class="s0">if </span>(rotation == -<span class="s4">47</span>) {
+                    maxDegree = <span class="s0">true</span>;
+                }
+                <span class="s0">if </span>(rotation == <span class="s4">46</span>)
+                    maxDegree = <span class="s0">false</span>;
+                <span class="s0">if </span>(!flag) {
+                    <span class="s0">if </span>(maxDegree &amp;&amp; rotation &lt; <span class="s4">46</span>) {
+                        matrix.postRotate(rotation, bow.getWidth() / <span class="s4">2</span>, bow.getHeight() / <span class="s4">2</span>);
+                        rotation += <span class="s4">3</span>;
+                    }
+
+                    <span class="s0">if </span>(!maxDegree &amp;&amp; rotation &gt; -<span class="s4">48</span>) {
+                        matrix.postRotate(rotation, bow.getWidth() / <span class="s4">2</span>, bow.getHeight() / <span class="s4">2</span>);
+                        rotation -= <span class="s4">3</span>;
+                    }
+                } <span class="s0">else </span>{
+                    matrix.postRotate(rotation, bow.getWidth() / <span class="s4">2</span>, bow.getHeight() / <span class="s4">2</span>);
+                }
+                matrix.postTranslate(width / <span class="s4">9 </span>- bow.getWidth() / <span class="s4">2</span>, height * <span class="s4">16 </span>/ <span class="s4">32 </span>- bow.getHeight() / <span class="s4">2</span>);
+                canvas.drawBitmap(bow, matrix, <span class="s0">null</span>);
+            }
+
+            <span class="s0">if </span>(up) {
+
+                <span class="s0">if </span>(first) {
+                    pressTime = z;
+                    <span class="s0">if </span>(pressTime &gt; <span class="s4">1000</span>)
+                        pressTime = <span class="s4">1</span>;
+                    <span class="s0">else </span>{
+                        pressTime = pressTime / <span class="s4">1000</span>;
+                    }
+                }
+                <span class="s0">if </span>(z != <span class="s4">0</span>)
+                    first = <span class="s0">false</span>;
+                <span class="s0">if </span>(bound) {
+                    bound = <span class="s0">false</span>;
+
+                }
+
+                rotateafter = rotation;
+
+                <span class="s0">if </span>(angleboolean) {
+                    yspeed = (pressTime * Math.sin(Math.toRadians(rotateafter)) * -Speed - (Time * <span class="s4">0.9</span>));
+                    xspeed = (pressTime * Math.cos(Math.toRadians(rotateafter)) * Speed * <span class="s4">1.65</span>);
+                }
+
+                Matrix matrixafter = <span class="s0">new </span>Matrix();
+                matrixafter.postRotate(rotateafter, bow.getWidth() / <span class="s4">2</span>, bow.getHeight() / <span class="s4">2</span>);
+                matrixafter.postTranslate(width / <span class="s4">9 </span>- bow.getWidth() / <span class="s4">2</span>, height * <span class="s4">16 </span>/ <span class="s4">32 </span>- bow.getHeight() / <span class="s4">2</span>);
+                canvas.drawBitmap(bowafter, matrixafter, <span class="s0">null</span>);
+
+                arrow1 = <span class="s0">new </span>Arrow(Time, yspeed, xspeed, arrow, width, height, arrow.getWidth(), arrow.getHeight(), canvas.getHeight() - arrowheight, canvas.getWidth() - arrowwidth, width / <span class="s4">9 </span>- arrow.getWidth() / <span class="s4">2</span>, (height - arrow.getHeight()) / <span class="s4">2</span>, <span class="s0">true</span>, <span class="s0">false</span>, <span class="s0">false</span>);
+
+                <span class="s0">if </span>(arrow1.getX() &amp;&amp; arrow1.getY()) {
+                    arrow1.setAb(<span class="s0">true</span>);
+                    arrow1.setB(<span class="s0">false</span>);
+                    arrow1.setA(<span class="s0">false</span>);
+
+                } <span class="s0">else </span>{
+                    arrow1.setTime(timee);
+                    angleboolean = <span class="s0">false</span>;
+                    arrow1.Setx(xcoordinate);
+                    arrow1.Sety(ycoordinate);
+                    arrow1.setAngle(angle);
+
+                    <span class="s0">if </span>(arrow1.getX()) {
+                        arrow1.setB(<span class="s0">false</span>);
+                        arrow1.setA(<span class="s0">true</span>);
+                        arrow1.setAb(<span class="s0">false</span>);
+
+                    } <span class="s0">else </span>{
+                        <span class="s0">if </span>(arrow1.getY()) {
+                            arrow1.setB(<span class="s0">true</span>);
+                            arrow1.setA(<span class="s0">false</span>);
+                            arrow1.setAb(<span class="s0">false</span>);
+
+                        } <span class="s0">else </span>{
+                            arrow1.setB(<span class="s0">false</span>);
+                            arrow1.setA(<span class="s0">false</span>);
+                            arrow1.setAb(<span class="s0">false</span>);
+
+                        }
+                    }
+
+                }
+
+                canvas.drawBitmap(arrow, arrow1.getArrow(), <span class="s0">null</span>);
+                <span class="s0">if </span>(arrow1.getAb()) {
+                    timee = arrow1.Time;
+                    xcoordinate = arrow1.x;
+                    ycoordinate = arrow1.y;
+                    angle = arrow1.getAngle();
+
+                } <span class="s0">else </span>{
+                    finish = <span class="s0">true</span>;
+                    <span class="s0">if </span>(arrow1.isA()) {
+                        xcoordinate = arrow1.x;
+                        ycoordinate = canvas.getHeight() - arrowheight - <span class="s4">110</span>;
+                    } <span class="s0">else </span>{
+
+
+                        <span class="s0">if </span>(arrow1.isB()) {
+                            ycoordinate = arrow1.y;
+                            xcoordinate = canvas.getWidth() - arrowwidth - <span class="s4">50</span>;
+                        } <span class="s0">else </span>{
+
+                            <span class="s0">int </span>ydiff = Math.abs(ycoordinate - canvas.getHeight() - arrowheight - <span class="s4">110</span>);
+                            <span class="s0">int </span>xdiff = Math.abs(xcoordinate - canvas.getWidth() - arrowwidth - <span class="s4">50</span>);
+                            <span class="s0">if </span>(ydiff &gt; xdiff) {
+                                xcoordinate = canvas.getWidth() - arrowwidth - <span class="s4">50</span>;
+                                <span class="s0">if </span>(firsttime &amp;&amp; ydiff &gt; <span class="s4">100</span>) {
+                                    firsttime = <span class="s0">false</span>;
+                                    ycoordinate += (<span class="s0">int</span>) ((arrow1.y + arrow1.getySpeed()) * <span class="s4">0.05</span>);
+                                    angle += (angle / Math.abs(angle)) * <span class="s4">5</span>;
+                                }
+
+
+                            } <span class="s0">else </span>{
+                                ycoordinate = canvas.getHeight() - arrowheight - <span class="s4">90</span>;
+                                <span class="s0">if </span>(firsttime &amp;&amp; xdiff &gt; <span class="s4">100</span>) {
+                                    firsttime = <span class="s0">false</span>;
+                                    xcoordinate += Math.abs(arrow1.xSpeed * (arrow1.Time)) * <span class="s4">0.1</span>;
+                                    angle += (angle / Math.abs(angle)) * <span class="s4">5</span>;
+                                }
+
+
+                            }
+                        }
+                    }
+                }
+                arrowheady = arrow1.y + (<span class="s0">int</span>) (<span class="s4">2 </span>* Math.sqrt(Math.pow(<span class="s4">56</span>, <span class="s4">2</span>) + Math.pow(<span class="s4">19</span>, <span class="s4">2</span>)) * Math.sin(Math.toRadians(arrow1.getAngle())));
+                arrowheadx = arrow1.x + (<span class="s0">int</span>) (<span class="s4">2 </span>* Math.sqrt(Math.pow(<span class="s4">56</span>, <span class="s4">2</span>) + Math.pow(<span class="s4">19</span>, <span class="s4">2</span>)) * Math.cos(Math.toRadians(arrow1.getAngle())));
+
+
+                Time += <span class="s4">1</span>;
+            }
+            <span class="s0">if </span>(finish) {
+                delayfinish++;
+                <span class="s0">if </span>(delayfinish == <span class="s4">4</span>) {
+                    <span class="s0">if </span>(appleboolean){
+                        heartnum--;
+                        combo=<span class="s4">0</span>;
+                    }
+                    <span class="s0">else </span>{
+                        score += <span class="s4">10</span>;
+                        combo++;
+                        <span class="s0">if</span>(combo&gt;maxCombo)
+                            maxCombo=combo;
+                    }
+                    appleboolean = <span class="s0">true</span>;
+                    firsttime = <span class="s0">true</span>;
+                    finish = <span class="s0">false</span>;
+                    recreate = <span class="s0">false</span>;
+                    rotation = <span class="s4">10</span>;
+                    xcoordinate = <span class="s4">0</span>;
+                    ycoordinate = <span class="s4">0</span>;
+                    <span class="s0">double </span>angle = <span class="s4">0</span>;
+                    timeInMilliseconds = <span class="s4">0</span>;
+                    applecorx = random.nextInt(<span class="s4">644</span>) + <span class="s4">483</span>;
+                    applecory = random.nextInt(<span class="s4">428</span>) + <span class="s4">100</span>;
+                    delayfinish = <span class="s4">0</span>;
+                    x = <span class="s4">5</span>;
+                    Time = <span class="s4">1</span>;
+                    z = <span class="s4">0</span>;
+                    check = <span class="s0">true</span>;
+                    touch = <span class="s0">true</span>;
+                    flag = <span class="s0">false</span>;
+                    up = <span class="s0">false</span>;
+                    first = <span class="s0">true</span>;
+                    settingpress = <span class="s0">false</span>;
+                    bound = <span class="s0">true</span>;
+                    maxDegree = <span class="s0">true</span>;
+                    angleboolean = <span class="s0">true</span>;
+                    heartFrame = <span class="s4">0</span>;
+                    bowFrame = <span class="s4">0</span>;
+                    T = <span class="s4">1</span>; <span class="s2">// work</span>
+
+                }
+            }
+            handler.postDelayed(runnable, Delay);
+
+        }
+    }
+    <span class="s0">private void </span>updatedata(String key ,Player player1 ) {
+        player.setCurrentGold(player1.getCurrentGold());
+        player.setLogestGame(player1.getLogestGame());
+        player.setLongestCombo(player1.getLogestGame());
+        player.setMostGoldEarnedInSingleGame(player1.getMostGoldEarnedInSingleGame());
+        player.setNumberOfGames(player1.getNumberOfGames());
+        player.setHighScore(player1.getHighScore());
+        PlayerInfo.child(key).setValue(player);
+    }
+}
+
+
+</pre>
+</body>
+</html>

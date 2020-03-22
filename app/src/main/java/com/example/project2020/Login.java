@@ -79,6 +79,8 @@ public class Login extends AppCompatActivity {
                            s.putExtra("longestcombo",player1.getLongestCombo());
                            s.putExtra("currentgold",player1.getCurrentGold());
                            s.putExtra("highscore",player1.getHighScore());
+                           s.putExtra("BK",player1.isBK());
+                           s.putExtra("SE",player1.isSE());
                            s.putExtra("login",true);
                            startActivity(s);}
                        else{

@@ -13,8 +13,8 @@ public class Arrow {
     protected Bitmap arrow;
     protected int width ;
     protected int height;
-    protected  int x;
-    protected  int y;
+    protected  float x,fx;
+    protected  float y,fy;
     protected int arrowHeight;
     protected int arrowWidth;
     protected int canvasHeight;
@@ -46,7 +46,7 @@ public class Arrow {
         Time = time;
     }
 
-    public Arrow(int time, double ySpeed, double xSpeed, Bitmap arrow, int width, int height, int arrowHeight, int arrowWidth, int canvasHeight, int canvasWidth, int x1, int y1, boolean ab, boolean a , boolean b) {
+    public Arrow(int time, double ySpeed, double xSpeed, Bitmap arrow, int width, int height, int arrowHeight, int arrowWidth, int canvasHeight, int canvasWidth, float x1, float y1, boolean ab, boolean a , boolean b,float fx,float fy) {
         Time = time;
         this.ySpeed = ySpeed;
         this.xSpeed = xSpeed;
@@ -62,11 +62,13 @@ public class Arrow {
         this.arrowWidth = arrowWidth;
         this.canvasHeight = canvasHeight;
         this.canvasWidth = canvasWidth;
+        this.fx=fx;
+        this.fy=fy;
     }
-    public void Setx (int x ){
+    public void Setx (float x ){
         this.x=x;
     }
-    public void Sety (int y ){
+    public void Sety (float y ){
         this.y=y;
     }
     public  double getstepy(){
@@ -85,10 +87,10 @@ public class Arrow {
         return (-ySpeed*Time+Time*Time/10);
     }
     public boolean getX(){
-        return x +Math.abs(xSpeed * (Time))<=canvasWidth-50;
+        return x +Math.abs(xSpeed * (Time))<=canvasWidth-(50)*fx;
     }
     public boolean getY(){
-        return y+getySpeed()<=canvasHeight-110;
+        return y+getySpeed()<=canvasHeight-(110)*fy;
     }
     public boolean isA() {
         return a;
@@ -101,7 +103,6 @@ public class Arrow {
         Matrix matrix = new Matrix();//-110,-90
         if(ab){
             matrix.postRotate((int)getAngle(), arrowWidth/2, arrowHeight / 2);
-
             x =x+(int) Math.abs(xSpeed * Time);
             y = y+(int)getySpeed();
             matrix.postTranslate(x,y );

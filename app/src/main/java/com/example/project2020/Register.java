@@ -37,7 +37,7 @@ public class Register extends Activity {
         Username= findViewById(R.id.username);
         Password= findViewById(R.id.password);
         Email =findViewById(R.id.Email);
-
+        System.out.println("hasfdad "+2000/99f);
         RegisterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
