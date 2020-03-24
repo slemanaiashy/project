@@ -17,8 +17,8 @@ public class Arrow {
     protected  float y,fy;
     protected int arrowHeight;
     protected int arrowWidth;
-    protected int canvasHeight;
-    protected int canvasWidth;
+    protected float canvasHeight;
+    protected float canvasWidth;
     protected int Abx,Aby;
 
     private boolean a,b,ab;
@@ -46,7 +46,23 @@ public class Arrow {
         Time = time;
     }
 
-    public Arrow(int time, double ySpeed, double xSpeed, Bitmap arrow, int width, int height, int arrowHeight, int arrowWidth, int canvasHeight, int canvasWidth, float x1, float y1, boolean ab, boolean a , boolean b,float fx,float fy) {
+    public float getCanvasHeight() {
+        return canvasHeight;
+    }
+
+    public void setCanvasHeight(float canvasHeight) {
+        this.canvasHeight = canvasHeight;
+    }
+
+    public float getCanvasWidth() {
+        return canvasWidth;
+    }
+
+    public void setCanvasWidth(float canvasWidth) {
+        this.canvasWidth = canvasWidth;
+    }
+
+    public Arrow(int time, double ySpeed, double xSpeed, Bitmap arrow, int width, int height, int arrowHeight, int arrowWidth, float x1, float y1, boolean ab, boolean a , boolean b, float fx, float fy) {
         Time = time;
         this.ySpeed = ySpeed;
         this.xSpeed = xSpeed;
@@ -60,8 +76,6 @@ public class Arrow {
         this.ab=ab;
         this.arrowHeight = arrowHeight;
         this.arrowWidth = arrowWidth;
-        this.canvasHeight = canvasHeight;
-        this.canvasWidth = canvasWidth;
         this.fx=fx;
         this.fy=fy;
     }
@@ -87,10 +101,10 @@ public class Arrow {
         return (-ySpeed*Time+Time*Time/10);
     }
     public boolean getX(){
-        return x +Math.abs(xSpeed * (Time))<=canvasWidth-(50)*fx;
+        return x +Math.abs(xSpeed * (Time))<=(canvasWidth);
     }
     public boolean getY(){
-        return y+getySpeed()<=canvasHeight-(110)*fy;
+        return y+getySpeed()<=(canvasHeight);
     }
     public boolean isA() {
         return a;
@@ -111,13 +125,13 @@ public class Arrow {
         if (a&&!ab) {
 
             matrix.postRotate((int)Angle, arrowWidth/2, arrowHeight / 2);
-            matrix.postTranslate(x,canvasHeight-110 );
+            matrix.postTranslate(x,canvasHeight );
 
             return matrix;
         }
         if(b&&!ab){
             matrix.postRotate((int)Angle, arrowWidth/2, arrowHeight / 2);
-            matrix.postTranslate(canvasWidth-50,y );
+            matrix.postTranslate(canvasWidth,y );
 
             return matrix;
 

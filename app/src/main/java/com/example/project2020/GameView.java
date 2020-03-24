@@ -61,13 +61,16 @@ public class GameView extends View {
         float Xtouch = event.getX();//x
         System.out.println("Xtouch"+Xtouch);
         System.out.println("Ytouch"+Ytouch);
-        long eventDuration = android.os.SystemClock.elapsedRealtime() - event.getDownTime();
+        int action = event.getAction();
+        long now =  System.currentTimeMillis();
 
-        if (T % 4 == 0 && T != 1) {
-            z = (int) eventDuration;
+        if (T % 4 == 0 && T != 1&&action==MotionEvent.ACTION_UP) {
+            z=now-z;
             up = true;
         }
-        int action = event.getAction();
+        if(T%3==0&&action==MotionEvent.ACTION_DOWN){
+            z=now;
+        }
         if(action==MotionEvent.ACTION_MOVE){
         }
         else
@@ -77,24 +80,33 @@ public class GameView extends View {
 
         else {
             settingpress = true;
-            if(Xtouch>685*fx&&Xtouch<770*fx&&Ytouch>195*fy&&Ytouch<280*fy&&action==MotionEvent.ACTION_UP){
+            if(Xtouch>900*fx&&Xtouch<980*fx&&Ytouch>32*fy&&Ytouch<112*fy){
+                if(action==MotionEvent.ACTION_UP)
+                settingpress=false;
+            }
+
+            if(Xtouch>705*fx&&Xtouch<790*fx&&Ytouch>195*fy&&Ytouch<280*fy&&action==MotionEvent.ACTION_UP){
                 bm=!bm;
                 updateBK(player.getUsername(),bm);
             }
 
-            if(Xtouch>685*fx&&Xtouch<770*fx&&Ytouch>295*fy&&Ytouch<380*fy&&action==MotionEvent.ACTION_UP){
+            if(Xtouch>705*fx&&Xtouch<790*fx&&Ytouch>295*fy&&Ytouch<380*fy&&action==MotionEvent.ACTION_UP){
                 se=!se;
                 updateSE(player.getUsername(),se);
             }
 
         }
-        if(T%3==0)
+        if(T%3==0){
             flag=true;
-        if (action == MotionEvent.ACTION_UP && !settingpress&&T%5==0) {
-            touch = false;
 
         }
 
+        if (action == MotionEvent.ACTION_UP && !settingpress&&T%5==0) {
+            System.out.println("dahek?");
+            touch = false;
+
+        }
+        System.out.println("number  "+T);
         return true;
 
 
@@ -106,6 +118,7 @@ public class GameView extends View {
     Player player ;
     Handler handler;
     Arrow arrow1;
+    float scalex,scaley;
     int arrowheadx,arrowheady,score=0,highscore=0;
     Runnable runnable;
     int rotation = 10,timee,maxCombo,maxGoldEarned=0;
@@ -115,14 +128,15 @@ public class GameView extends View {
     Rect rect1;
     long startTime, timeInMilliseconds = 0;
     Handler customHandler = new Handler();
-    Bitmap background, apple, Bow, settings,bow, bowafter, arrow,Score,gameoverback,settingback,coin;
+    Bitmap background, apple, Bow, settings,bow, bowafter, arrow,Score,gameoverback,settingback,coin,xbutton;
     Point point;
     Display display;
    int   applecorx = (random. nextInt(644)+483), applecory=random.nextInt(428)+100;
    int heartnum=3;
     final int Delay = 30, Speed = 55;
     int delayfinish=0;
-    float fx;
+    float fx,density;
+    Matrix matrixglobal;
     float fy;
     final double speedHeight = 10, Gravity = -10;
     int x = 5, ground, Helpx, Helpy, Time = 1,combo=0;
@@ -132,7 +146,7 @@ public class GameView extends View {
     DatabaseReference PlayerInfo;
     double yspeed=0, xspeed=0, yEquation, xEquation;
     int rotateafter;
-    double z = 0;
+    long z = 0;
     boolean check = true, touch = true, flag = false, up = false, first = true, settingpress = false, bound = true, maxDegree = true,angleboolean=true,finishgame=true;
     int width=1184, height=720, heartFrame = 0, bowFrame = 0, T = 1,wid,hei; // work
     Bitmap[]  heart1, heart3, heart2,number,numberscore,boxBM,boxSE;
@@ -145,6 +159,7 @@ public class GameView extends View {
         this.context=context;
         soundPlayer=new SoundPlayer(context);
         handler = new Handler();
+
         this.player=player;
         database = FirebaseDatabase.getInstance();
         PlayerInfo= database.getReference("PlayersInfo");
@@ -162,9 +177,13 @@ public class GameView extends View {
         wid = point.x;
         hei = point.y;
         System.out.println(wid+" shar"+hei);
-        fx =(wid/1184f);
-        System.out.println(fx+" wt "+2094/1184);
         fy=hei/720f;
+        fx =(wid/1184f);
+        density = context.getResources().getDisplayMetrics().density/2;
+        scalex=fx/density;
+        scaley=fy/density;
+        System.out.println(fx+" wt "+2094/1184);
+        xbutton= BitmapFactory.decodeResource(context.getResources(), R.drawable.xbutton);
         applecorx =(int)(applecorx*fx);
         applecory =(int)(applecory*fy);
         System.out.println(fy+"  wt1 "+1080/720);
@@ -220,73 +239,119 @@ public class GameView extends View {
 
         super.onDraw(canvas);
         BitmapFactory.Options options = new BitmapFactory.Options();
+        matrixglobal=new Matrix();
 
+        System.out.println(density+" zxczxc");
+      //  float px = someDpValue * density;
+       // float dp = somePxValue / density;
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeResource(getResources(), R.drawable.cropped, options);
         int arrowheight = options.outHeight;//12px
         int arrowwidth = options.outWidth;
+
         canvas.drawBitmap(background, null, rect, null);
-        canvas.drawBitmap(settings, ((int)15*fx), 15*fy, null);
-        canvas.drawBitmap(Score, 180*fx, 25*fy, null);
+        matrixglobal.setTranslate(0,0);
+        matrixglobal.postScale(scalex,scaley,0,0);
+        canvas.drawBitmap(settings, matrixglobal, null);
+        System.out.println(density+" "+fx+" "+fy);
+        matrixglobal.setTranslate(190*fx,25*fy);
+        matrixglobal.postScale(scalex,scaley,190*fx,25*fy);
+        canvas.drawBitmap(Score, matrixglobal, null);
+        Matrix matriixMatrix = new Matrix();
+        matriixMatrix.setTranslate(0,0);
+       matriixMatrix.preScale(fx,fy);
+       // canvas.drawBitmap(gameoverback, matriixMatrix, null);
         final int distance = 60,distancescore=40; //distance between each number
         //  canvas.drawBitmap(Score2,380,25,null);
         System.out.println(fx+"  asd "+fy);
+        System.out.println("asdsadsa"+190*fx);
 
         switch (String.valueOf(score).length()) {
             case 1:
-                canvas.drawBitmap(number[0], 380*fx, 15*fy, null);
+                matrixglobal.setTranslate(390*fx, 15*fy);
+                matrixglobal.postScale(scalex,scaley,390*fx, 15*fy);
+                canvas.drawBitmap(number[0], matrixglobal, null);
                 break;
             case 2:
-                canvas.drawBitmap(number[score / 10], 380*fx, 15*fy, null);
-                canvas.drawBitmap(number[0], (380 + distance)*fx, 15*fy, null);
+                matrixglobal.setTranslate(390*fx, 15*fy);
+                matrixglobal.postScale(scalex,scaley,390*fx, 15*fy);
+                canvas.drawBitmap(number[score / 10], matrixglobal, null);
+                matrixglobal.setTranslate((390+distance)*fx, 15*fy);
+                matrixglobal.postScale(scalex,scaley,(390+distance)*fx, 15*fy);
+                canvas.drawBitmap(number[0], matrixglobal, null);
 
                 break;
             case 3:
-                canvas.drawBitmap(number[score / 100], 380*fx, 15*fy, null);
-                canvas.drawBitmap(number[(score / 10) % 10], (380 + distance)*fx, 15*fy, null);
-                canvas.drawBitmap(number[0], (380 + distance * 2)*fx, 15*fy, null);
+                matrixglobal.setTranslate(390*fx, 15*fy);
+                matrixglobal.postScale(scalex,scaley,390*fx, 15*fy);
+                canvas.drawBitmap(number[score / 100], matrixglobal, null);
+                matrixglobal.setTranslate((390+distance)*fx, 15*fy);
+                matrixglobal.postScale(scalex,scaley,(390+distance)*fx, 15*fy);
+                canvas.drawBitmap(number[(score / 10) % 10], matrixglobal, null);
+                matrixglobal.setTranslate((390+distance*2)*fx, 15*fy);
+                matrixglobal.postScale(scalex,scaley,(390+distance*2)*fx, 15*fy);
+                canvas.drawBitmap(number[0], matrixglobal, null);
                 break;
             case 4:
-                canvas.drawBitmap(number[score / 1000], 380*fx, 15*fy, null);
-                canvas.drawBitmap(number[(score / 100) % 10], (380 + distance)*fx, 15*fy, null);
-                canvas.drawBitmap(number[(score / 10) % 10],(380 + distance * 2)*fx, 15*fy, null);
-                canvas.drawBitmap(number[0],( 380 + distance * 3)*fx, 15*fy, null);
+                matrixglobal.setTranslate(390*fx, 15*fy);
+                matrixglobal.postScale(scalex,scaley,390*fx, 15*fy);
+                canvas.drawBitmap(number[score / 1000], matrixglobal, null);
+                matrixglobal.setTranslate((390+distance)*fx, 15*fy);
+                matrixglobal.postScale(scalex,scaley,(390+distance)*fx, 15*fy);
+                canvas.drawBitmap(number[(score / 100) % 10], matrixglobal, null);
+                matrixglobal.setTranslate((390+distance*2)*fx, 15*fy);
+                matrixglobal.postScale(scalex,scaley,(390+distance*2)*fx, 15*fy);
+                canvas.drawBitmap(number[(score / 10) % 10],matrixglobal, null);
+                matrixglobal.setTranslate((390+distance*3)*fx, 15*fy);
+                matrixglobal.postScale(scalex,scaley,(390+distance*3)*fx, 15*fy);
+                canvas.drawBitmap(number[0],matrixglobal, null);
 
 
         }
+        System.out.println("xoxo :"+heartnum);
         switch (heartnum) {
             case 3:
-                canvas.drawBitmap(heart1[0], (width - 275)*fx, 20*fy, null);
-                canvas.drawBitmap(heart2[0], (width - 185)*fx, 20*fy, null);
-                canvas.drawBitmap(heart3[0], (width - 100)*fx, 20*fy, null);
+                matrixglobal.setTranslate((width - 275)*fx , 20*fy);
+                matrixglobal.postScale(scalex,scaley,(width - 275)*fx, 20*fy);
+                canvas.drawBitmap(heart1[0],matrixglobal, null);
+                matrixglobal.setTranslate((width - 185)*fx , 20*fy);
+                matrixglobal.postScale(scalex,scaley,(width - 185)*fx, 20*fy);
+                canvas.drawBitmap(heart2[0], matrixglobal, null);
+                matrixglobal.setTranslate((width - 100)*fx , 20*fy);
+                matrixglobal.postScale(scalex,scaley,(width - 100)*fx,20*fy);
+                canvas.drawBitmap(heart3[0], matrixglobal, null);
                 break;
             case 2:
-                canvas.drawBitmap(heart1[1], (width - 275)*fx, 20*fy, null);
-                canvas.drawBitmap(heart2[0], (width - 185)*fx, 20*fy, null);
-                canvas.drawBitmap(heart3[0], (width - 100)*fx, 20*fy, null);
+                matrixglobal.setTranslate((width - 275)*fx , 20*fy);
+                matrixglobal.postScale(scalex,scaley,(width - 275)*fx, 20*fy);
+                canvas.drawBitmap(heart1[1],matrixglobal, null);
+                matrixglobal.setTranslate((width - 185)*fx , 20*fy);
+                matrixglobal.postScale(scalex,scaley,(width - 185)*fx, 20*fy);
+                canvas.drawBitmap(heart2[0], matrixglobal, null);
+                matrixglobal.setTranslate((width - 100)*fx , 20*fy);
+                matrixglobal.postScale(scalex,scaley,(width - 100)*fx,20*fy);
+                canvas.drawBitmap(heart3[0], matrixglobal, null);
                 break;
             case 1:
-                canvas.drawBitmap(heart1[1], (width - 275)*fx, 20*fy, null);
-                canvas.drawBitmap(heart2[1], (width - 185)*fx, 20*fy, null);
-                canvas.drawBitmap(heart3[0], (width - 100)*fx, 20*fy, null);
+                matrixglobal.setTranslate((width - 275)*fx , 20*fy);
+                matrixglobal.postScale(scalex,scaley,(width - 275)*fx, 20*fy);
+                canvas.drawBitmap(heart1[1],matrixglobal, null);
+                matrixglobal.setTranslate((width - 185)*fx , 20*fy);
+                matrixglobal.postScale(scalex,scaley,(width - 185)*fx, 20*fy);
+                canvas.drawBitmap(heart2[1], matrixglobal, null);
+                matrixglobal.setTranslate((width - 100)*fx , 20*fy);
+                matrixglobal.postScale(scalex,scaley,(width - 100)*fx,20*fy);
+                canvas.drawBitmap(heart3[0], matrixglobal, null);
                 break;
             case 0:
                 finishgame = false;
-                float value=0;
-                Matrix matrix=new Matrix();//455,322
-                matrix.postTranslate(145*fx,40*fy);
-                if(fx<1&&fy<1){
-                    matrix.postScale(fx*1.2f,fy*1.2f);
-                    value=fx*0.85f;
-                }
-                if(fx>1&&fy>1){
-                    matrix.postScale(fx*0.73f,fy*0.73f);
-                    value =fx*1.15f;
-                }
-
-                canvas.drawBitmap(gameoverback, matrix, null);
+                matrixglobal.setTranslate(145*fx,40*fy);
+                matrixglobal.postScale(scalex,scaley,145*fx,40*fy);
+                canvas.drawBitmap(gameoverback, matrixglobal, null);
                 System.out.println(135*fx);
-                canvas.drawBitmap(coin,330*fx*1.15f,259*fy,null);
+                matrixglobal.setTranslate(330*fx,259*fy);
+                matrixglobal.postScale(scalex,scaley,330*fx,259*fy);
+                canvas.drawBitmap(coin,matrixglobal,null);
                 if(done){
                     if(se)
                     soundPlayer.playGameOver();
@@ -302,99 +367,162 @@ public class GameView extends View {
                     done =false;}
                 switch (String.valueOf(score).length()) {
                     case 1:
-                        canvas.drawBitmap(number[0], 625*fx, 465*fy, null);
+                        matrixglobal.setTranslate(625*fx, 465*fy);
+                        matrixglobal.postScale(scalex,scaley,625*fx, 465*fy);
+                        canvas.drawBitmap(number[0], matrixglobal, null);
                         break;
                     case 2:
-                        canvas.drawBitmap(number[score / 10], 625*fx, 465*fy, null);
-                        canvas.drawBitmap(number[0], (625 + distance)*fx, 465*fy, null);
+                        matrixglobal.setTranslate(625*fx, 465*fy);
+                        matrixglobal.postScale(scalex,scaley,625*fx, 465*fy);
+                        canvas.drawBitmap(number[score / 10], matrixglobal, null);
+                        matrixglobal.setTranslate((625+distance)*fx, 465*fy);
+                        matrixglobal.postScale(scalex,scaley,(625+distance)*fx, 465*fy);
+                        canvas.drawBitmap(number[0], matrixglobal, null);
                         break;
                     case 3:
-                        canvas.drawBitmap(number[score / 100], 625*fx, 465*fy, null);
-                        canvas.drawBitmap(number[(score / 10) % 10], (625 + distance)*fx + distance, 465*fy, null);
-                        canvas.drawBitmap(number[0], (625 + distance*2)*fx, 465*fy, null);
+                        matrixglobal.setTranslate(625*fx, 465*fy);
+                        matrixglobal.postScale(scalex,scaley,625*fx, 465*fy);
+                        canvas.drawBitmap(number[score / 100], matrixglobal, null);
+                        matrixglobal.setTranslate((625+distance)*fx, 465*fy);
+                        matrixglobal.postScale(scalex,scaley,(625+distance)*fx, 465*fy);
+                        canvas.drawBitmap(number[(score / 10) % 10], matrixglobal, null);
+                        matrixglobal.setTranslate((625+distance*2)*fx, 465*fy);
+                        matrixglobal.postScale(scalex,scaley,(625+distance*2)*fx, 465*fy);
+                        canvas.drawBitmap(number[0], matrixglobal, null);
                         break;
                     case 4:
-                        canvas.drawBitmap(number[score / 1000], 625*fx, 465*fy, null);
-                        canvas.drawBitmap(number[(score / 100) % 10], (625 + distance)*fx, 465*fy, null);
-                        canvas.drawBitmap(number[(score / 10) % 10], (625 + distance*2)*fx, 465*fy, null);
-                        canvas.drawBitmap(number[0], (625 + distance*3)*fx, 465*fy, null);
+                        matrixglobal.setTranslate(625*fx, 465*fy);
+                        matrixglobal.postScale(scalex,scaley,625*fx, 465*fy);
+                        canvas.drawBitmap(number[score / 1000], matrixglobal, null);
+                        matrixglobal.setTranslate((625+distance)*fx, 465*fy);
+                        matrixglobal.postScale(scalex,scaley,(625+distance)*fx, 465*fy);
+                        canvas.drawBitmap(number[(score / 100) % 10], matrixglobal, null);
+                        matrixglobal.setTranslate((625+distance*2)*fx, 465*fy);
+                        matrixglobal.postScale(scalex,scaley,(625+distance*2)*fx, 465*fy);
+                        canvas.drawBitmap(number[(score / 10) % 10], matrixglobal, null);
+                        matrixglobal.setTranslate((625+distance*3)*fx, 465*fy);
+                        matrixglobal.postScale(scalex,scaley,(625+distance*3)*fx, 465*fy);
+                        canvas.drawBitmap(number[0], matrixglobal, null);
                         break;
 
                 }
-                System.out.println(player.getHighScore());
-                System.out.println(highscore);
-                System.out.println(score);
+
 
                 switch (String.valueOf(highscore).length()){
 
                     case 1:
-                        canvas.drawBitmap(number[0], 645*fx , 362*fy, null);
+                        matrixglobal.setTranslate((645)*fx, 362*fy);
+                        matrixglobal.postScale(scalex,scaley,(645)*fx, 362*fy);
+                        canvas.drawBitmap(number[0], matrixglobal, null);
                         break;
                     case 2:
-                        canvas.drawBitmap(number[highscore / 10], 645*fx  , 362*fy, null);
-                        canvas.drawBitmap(number[0], (645 + distance)*fx, 362*fy, null);
+                        matrixglobal.setTranslate((645)*fx, 362*fy);
+                        matrixglobal.postScale(scalex,scaley,(645)*fx, 362*fy);
+                        canvas.drawBitmap(number[highscore / 10],matrixglobal, null);
+                        matrixglobal.setTranslate((645+distance)*fx, 362*fy);
+                        matrixglobal.postScale(scalex,scaley,(645+distance)*fx, 362*fy);
+                        canvas.drawBitmap(number[0], matrixglobal, null);
                         break;
                     case 3:
-                        canvas.drawBitmap(number[highscore / 100], 645*fx  , 362*fy, null);
-                        canvas.drawBitmap(number[(highscore / 10) % 10], (645 + distance)*fx, 362*fy, null);
-                        canvas.drawBitmap(number[0], (645 + distance * 2)*fx, 362*fy, null);
+                        matrixglobal.setTranslate((645)*fx, 362*fy);
+                        matrixglobal.postScale(scalex,scaley,(645)*fx, 362*fy);
+                        canvas.drawBitmap(number[highscore / 100],matrixglobal, null);
+                        matrixglobal.setTranslate((645+distance)*fx, 362*fy);
+                        matrixglobal.postScale(scalex,scaley,(645+distance)*fx, 362*fy);
+                        canvas.drawBitmap(number[(highscore / 10) % 10], matrixglobal, null);
+                        matrixglobal.setTranslate((645+distance*2)*fx, 362*fy);
+                        matrixglobal.postScale(scalex,scaley,(645+distance*2)*fx, 362*fy);
+                        canvas.drawBitmap(number[0], matrixglobal, null);
                         break;
                     case 4:
-                        canvas.drawBitmap(number[highscore / 1000],645*fx  , 362*fy, null);
-                        canvas.drawBitmap(number[(highscore / 100) % 10], (645 + distance )*fx, 362*fy, null);
-                        canvas.drawBitmap(number[(highscore / 10) % 10], (645 + distance * 2)*fx, 362*fy, null);
-                        canvas.drawBitmap(number[0], (645 + distance * 3)*fx, 362*fy, null);
+                        matrixglobal.setTranslate((645)*fx, 362*fy);
+                        matrixglobal.postScale(scalex,scaley,(645)*fx, 362*fy);
+                        canvas.drawBitmap(number[highscore / 1000],matrixglobal, null);
+                        matrixglobal.setTranslate((645+distance)*fx, 362*fy);
+                        matrixglobal.postScale(scalex,scaley,(645+distance)*fx, 362*fy);
+                        canvas.drawBitmap(number[(highscore / 100) % 10], matrixglobal, null);
+                        matrixglobal.setTranslate((645+distance*2)*fx, 362*fy);
+                        matrixglobal.postScale(scalex,scaley,(645+distance*2)*fx, 362*fy);
+                        canvas.drawBitmap(number[(highscore / 10) % 10], matrixglobal, null);
+                        matrixglobal.setTranslate((645+distance*3)*fx, 362*fy);
+                        matrixglobal.postScale(scalex,scaley,(645+distance*3)*fx, 362*fy);
+                        canvas.drawBitmap(number[0], matrixglobal, null);
                         break;
                 }
                 switch (String.valueOf(player.getCurrentGold()).length()){
                     case 1:
-                        canvas.drawBitmap(number[player.getCurrentGold()%10], 420*value , 259*fy, null);
+                        matrixglobal.setTranslate((420)*fx, 259*fy);
+                        matrixglobal.postScale(scalex,scaley,(420)*fx, 259*fy);
+                        canvas.drawBitmap(number[player.getCurrentGold()%10], matrixglobal, null);
                         break;
                     case 2:
-                        canvas.drawBitmap(number[player.getCurrentGold() / 10], 420*value , 259*fy, null);
-                        canvas.drawBitmap(number[player.getCurrentGold()%10], (420 + distance)*value, 259*fy, null);
+                        matrixglobal.setTranslate((420)*fx, 259*fy);
+                        matrixglobal.postScale(scalex,scaley,(420)*fx, 259*fy);
+                        canvas.drawBitmap(number[player.getCurrentGold() / 10],matrixglobal, null);
+                        matrixglobal.setTranslate((420+distance)*fx, 259*fy);
+                        matrixglobal.postScale(scalex,scaley,(420+distance)*fx, 259*fy);
+                        canvas.drawBitmap(number[player.getCurrentGold()%10],matrixglobal, null);
                         break;
                     case 3:
-                        canvas.drawBitmap(number[player.getCurrentGold() / 100], 420*value, 259*fy, null);
-                        canvas.drawBitmap(number[(player.getCurrentGold() / 10) % 10], (420 + distance)*value, 259*fy, null);
-                        canvas.drawBitmap(number[player.getCurrentGold()%10], (420 + distance * 2)*value, 259*fy, null);
+                        matrixglobal.setTranslate((420)*fx, 259*fy);
+                        matrixglobal.postScale(scalex,scaley,(420)*fx, 259*fy);
+                        canvas.drawBitmap(number[player.getCurrentGold() / 100],matrixglobal, null);
+                        matrixglobal.setTranslate((420+distance)*fx, 259*fy);
+                        matrixglobal.postScale(scalex,scaley,(420+distance)*fx, 259*fy);
+                        canvas.drawBitmap(number[(player.getCurrentGold() / 10) % 10],matrixglobal, null);
+                        matrixglobal.setTranslate((420+distance*2)*fx, 259*fy);
+                        matrixglobal.postScale(scalex,scaley,(420+distance*2)*fx, 259*fy);
+                        canvas.drawBitmap(number[player.getCurrentGold()%10], matrixglobal, null);
                         break;
                     case 4:
-                        canvas.drawBitmap(number[player.getCurrentGold() / 1000],420*value , 259*fy, null);
-                        canvas.drawBitmap(number[(player.getCurrentGold() / 100) % 10], (420 + distance)*value, 259*fy, null);
-                        canvas.drawBitmap(number[(player.getCurrentGold() / 10) % 10], (420 + distance * 2)*value, 259*fy, null);
-                        canvas.drawBitmap(number[player.getCurrentGold()%10], (420 + distance * 3)*value, 259*fy, null);
+                        matrixglobal.setTranslate((420)*fx, 259*fy);
+                        matrixglobal.postScale(scalex,scaley,(420)*fx, 259*fy);
+                        canvas.drawBitmap(number[player.getCurrentGold() / 1000],matrixglobal, null);
+                        matrixglobal.setTranslate((420+distance)*fx, 259*fy);
+                        matrixglobal.postScale(scalex,scaley,(420+distance)*fx, 259*fy);
+                        canvas.drawBitmap(number[(player.getCurrentGold() / 100) % 10], matrixglobal, null);
+                        matrixglobal.setTranslate((420+distance*2)*fx, 259*fy);
+                        matrixglobal.postScale(scalex,scaley,(420+distance*2)*fx, 259*fy);
+                        canvas.drawBitmap(number[(player.getCurrentGold() / 10) % 10], (420 + distance * 2)*fx*density, 259*fy*density, null);
+                        matrixglobal.setTranslate((420+distance*3)*fx, 259*fy);
+                        matrixglobal.postScale(scalex,scaley,(420+distance*3)*fx, 259*fy);
+                        canvas.drawBitmap(number[player.getCurrentGold()%10], matrixglobal, null);
                         break;
                 }
                 break;
 
         }
         System.out.println(settingpress);
-        if(settingpress){
+       if(settingpress){
             Matrix matrix=new Matrix();//455,322
-            matrix.postTranslate(130*fx,25);
-            if(fx!=1&&fy!=1)
-            matrix.postScale(fx*0.75f,fy*0.75f);
+            matrix.setTranslate(130*fx,25*fy);
+            matrix.postScale(scalex,scaley,130*fx,25*fy);
             canvas.drawBitmap(settingback,matrix, null);
+            matrixglobal.setTranslate(900*fx,32*fy);
+            matrixglobal.postScale(scalex,scaley,900*fx,32*fy);
+            canvas.drawBitmap(xbutton,matrixglobal,null);
             System.out.println(bm+"  "+se);
             if(player.isBK()){
-                canvas.drawBitmap(boxBM[1],690*fx,205*fy,null);
+                canvas.drawBitmap(boxBM[1],710*fx,205*fy,null);
             }
             else{
-                canvas.drawBitmap(boxBM[0],690*fx,205*fy,null);
+                canvas.drawBitmap(boxBM[0],710*fx,205*fy,null);
             }
             if(player.isSE())
-                canvas.drawBitmap(boxBM[1],690*fx,318*fy,null);
+                canvas.drawBitmap(boxBM[1],710*fx,318*fy,null);
             else{
-                canvas.drawBitmap(boxBM[0],690*fx,318*fy,null);
+                canvas.drawBitmap(boxBM[0],710*fx,318*fy,null);
             }
 
         }
         Random random = new Random();
         if (finishgame) {
             if(!settingpress){
-            if (!((arrowheady > applecory - 30 && arrowheady < applecory + 60) && (arrowheadx > applecorx - 25 && arrowheadx < applecorx + 55)) && appleboolean) {
-                canvas.drawBitmap(apple, applecorx, applecory, null);
+            if (!((arrowheady > (applecory - 30*fx) && arrowheady < (applecory +60*fy ))&& (arrowheadx > (applecorx - 25*fx) && arrowheadx < (applecorx + 55*fx) ))&& appleboolean) {
+                matrixglobal.setTranslate(applecorx,applecory);
+                matrixglobal.postScale(scalex,scaley,applecorx,applecory);
+                canvas.drawBitmap(apple, matrixglobal, null);
+
             } else {
                 if (appleboolean == true&&se) {
                     soundPlayer.playHitSound();
@@ -426,11 +554,12 @@ public class GameView extends View {
                     matrix.postRotate(rotation, (bow.getWidth() / 2), bow.getHeight() / 2);
                 }
                 matrix.postTranslate((width / 9 - bow.getWidth() / 2)*fx, (height * 16 / 32 - bow.getHeight() / 2)*fy);
+                matrix.postScale(scalex,scaley,(width / 9 - bow.getWidth() / 2)*fx, (height * 16 / 32 - bow.getHeight() / 2)*fy);
                 canvas.drawBitmap(bow, matrix, null);
             }
 
-            if (up) {
-
+            if (up&&T % 5 == 0) {
+                System.out.println("potasharmota "+z);
                 if (first) {
                     pressTime = z;
                     if (pressTime > 1000)
@@ -445,73 +574,79 @@ public class GameView extends View {
                     bound = false;
 
                 }
-
+                System.out.println("wtf? :"+pressTime);
                 rotateafter = rotation;
 
                 if (angleboolean) {
-                    yspeed = (pressTime * Math.sin(Math.toRadians(rotateafter)) * -Speed - (Time * 0.9));
-                    xspeed = (pressTime * Math.cos(Math.toRadians(rotateafter)) * Speed * 1.65);
+                    yspeed = ((pressTime * Math.sin(Math.toRadians(rotateafter)) * -Speed - (Time * 0.9))*fy);
+                    xspeed = ((pressTime * Math.cos(Math.toRadians(rotateafter)) * Speed * 1.65)*fx);
                 }
 
-                Matrix matrixafter = new Matrix();
-                matrixafter.postRotate(rotateafter, bow.getWidth() / 2, bow.getHeight() / 2);
-                matrixafter.postTranslate((width / 9 - bow.getWidth() / 2)*fx, (height * 16 / 32 - bow.getHeight() / 2)*fy);
-                canvas.drawBitmap(bowafter, matrixafter, null);
+                    Matrix matrixafter = new Matrix();
+                    matrixafter.postRotate(rotateafter, bow.getWidth() / 2, bow.getHeight() / 2);
+                    matrixafter.postTranslate((width / 9 - bow.getWidth() / 2) * fx, (height * 16 / 32 - bow.getHeight() / 2) * fy);
+                    matrixafter.postScale(scalex, scaley, (width / 9 - bow.getWidth() / 2) * fx, (height * 16 / 32 - bow.getHeight() / 2) * fy);
+                    canvas.drawBitmap(bowafter, matrixafter, null);
 
-                arrow1 = new Arrow(Time, yspeed, xspeed, arrow, width, height, arrow.getWidth(), arrow.getHeight(), canvas.getHeight() - arrowheight, canvas.getWidth() - arrowwidth,( width / 9 - arrow.getWidth() / 2)*fx, ((height - arrow.getHeight()) / 2)*fy, true, false, false,fx,fy);
-
-                if (arrow1.getX() && arrow1.getY()) {
-                    arrow1.setAb(true);
-                    arrow1.setB(false);
-                    arrow1.setA(false);
-
-                } else {
-                    arrow1.setTime(timee);
-                    angleboolean = false;
-                    arrow1.Setx(xcoordinate);
-                    arrow1.Sety(ycoordinate);
-                    arrow1.setAngle(angle);
-
-                    if (arrow1.getX()) {
+                    arrow1 = new Arrow(Time, yspeed, xspeed, arrow, width, height, arrow.getWidth(), arrow.getHeight(), (width / 9 - arrow.getWidth() / 2) * fx, ((height - arrow.getHeight()) / 2) * fy, true, false, false, fx, fy);
+                    arrow1.setCanvasWidth((float) (canvas.getWidth() - Math.cos(Math.toRadians(arrow1.getAngle())) * arrowwidth * density));
+                    arrow1.setCanvasHeight((float) (canvas.getHeight() - Math.sin(Math.toRadians(arrow1.getAngle())) * arrowwidth * density));
+                    if (arrow1.getX() && arrow1.getY()) {
+                        arrow1.setAb(true);
                         arrow1.setB(false);
-                        arrow1.setA(true);
-                        arrow1.setAb(false);
-
+                        arrow1.setA(false);
+                        System.out.println("ab");
                     } else {
-                        if (arrow1.getY()) {
-                            arrow1.setB(true);
-                            arrow1.setA(false);
+                        System.out.println("fockme" + arrow1.getCanvasHeight() + "  " + arrow1.getCanvasWidth());
+                        arrow1.setTime(timee);
+                        angleboolean = false;
+                        arrow1.Setx(xcoordinate);
+                        arrow1.Sety(ycoordinate);
+                        arrow1.setAngle(angle);
+
+                        if (arrow1.getX()) {
+                            arrow1.setB(false);
+                            arrow1.setA(true);
                             arrow1.setAb(false);
+                            System.out.println("a");
 
                         } else {
-                            arrow1.setB(false);
-                            arrow1.setA(false);
-                            arrow1.setAb(false);
+                            if (arrow1.getY()) {
+                                arrow1.setB(true);
+                                arrow1.setA(false);
+                                arrow1.setAb(false);
+                                System.out.println("b");
+                            } else {
+                                arrow1.setB(false);
+                                arrow1.setA(false);
+                                arrow1.setAb(false);
+                                System.out.println("none");
 
+                            }
                         }
+
                     }
 
-                }
-
-                canvas.drawBitmap(arrow, arrow1.getArrow(), null);
-                if (arrow1.getAb()) {
-                    timee = arrow1.Time;
-                    xcoordinate = arrow1.x;
-                    ycoordinate = arrow1.y;
-                    angle = arrow1.getAngle();
-
-                } else {
-                    finish = true;
-                    if (arrow1.isA()) {
+                    canvas.drawBitmap(arrow, arrow1.getArrow(), null);
+                    if (arrow1.getAb()) {
+                        timee = arrow1.Time;
                         xcoordinate = arrow1.x;
-                        ycoordinate = (height- arrowheight - 110)*fy;
+                        ycoordinate = arrow1.y;
+                        angle = arrow1.getAngle();
+
+                    } else {
+                        finish = true;
+                    }
+                   /*  if (arrow1.isA()) {
+                        xcoordinate = arrow1.x;
+                        ycoordinate = 0;//canvas.getHeight()-(float)(Math.sin(arrow1.Angle)*arrowwidth*density);
                     } else {
 
 
                         if (arrow1.isB()) {
                             ycoordinate = arrow1.y;
-                            xcoordinate = canvas.getWidth() - arrowwidth - 50;
-                        } else {
+                            xcoordinate = canvas.getWidth() - arrowwidth*density;
+                        }*//* else {
 
                             float ydiff = Math.abs(ycoordinate - canvas.getHeight() - arrowheight - 110);
                             float xdiff = Math.abs(xcoordinate - canvas.getWidth() - arrowwidth - 50);
@@ -535,61 +670,60 @@ public class GameView extends View {
 
                             }
                         }
+                    )
+                }*/
+                    arrowheady = (int) (arrow1.y + (int) (2 * Math.sqrt(Math.pow(56, 2) + Math.pow(19, 2)) * Math.sin(Math.toRadians(arrow1.getAngle()))));
+                    arrowheadx = (int) (arrow1.x + (int) (2 * Math.sqrt(Math.pow(56, 2) + Math.pow(19, 2)) * Math.cos(Math.toRadians(arrow1.getAngle()))));
+
+
+                    Time += 1;
+                }
+                if (finish) {
+                    delayfinish++;
+                    if (delayfinish == 4) {
+                        if (appleboolean) {
+                            if (heartnum != 0)
+                                heartnum--;
+                            combo = 0;
+                        } else {
+                            score += 10;
+                            combo++;
+                            if (combo > maxCombo)
+                                maxCombo = combo;
+                        }
+                        appleboolean = true;
+                        firsttime = true;
+                        finish = false;
+                        recreate = false;
+                        rotation = 10;
+                        xcoordinate = 0;
+                        ycoordinate = 0;
+                        double angle = 0;
+                        timeInMilliseconds = 0;
+                        applecorx = (int) (fx * (random.nextInt(644) + 483));
+                        applecory = (int) (fy * random.nextInt(428) + 100);
+                        delayfinish = 0;
+                        x = 5;
+                        Time = 1;
+                        z = 0;
+                        check = true;
+                        touch = true;
+                        flag = false;
+                        up = false;
+                        first = true;
+                        settingpress = false;
+                        bound = true;
+                        maxDegree = true;
+                        angleboolean = true;
+                        heartFrame = 0;
+                        bowFrame = 0;
+                        T = 1; // work
+
                     }
                 }
-                arrowheady = (int)(arrow1.y + (int) (2 * Math.sqrt(Math.pow(56, 2) + Math.pow(19, 2)) * Math.sin(Math.toRadians(arrow1.getAngle()))));
-                arrowheadx = (int) (arrow1.x + (int) (2 * Math.sqrt(Math.pow(56, 2) + Math.pow(19, 2)) * Math.cos(Math.toRadians(arrow1.getAngle()))));
 
-
-                Time += 1;
-            }
-            if (finish) {
-                delayfinish++;
-                if (delayfinish == 4) {
-                    if (appleboolean){
-                        if(heartnum!=0)
-                        heartnum--;
-                        combo=0;
-                    }
-                    else {
-                        score += 10;
-                        combo++;
-                        if(combo>maxCombo)
-                            maxCombo=combo;
-                    }
-                    appleboolean = true;
-                    firsttime = true;
-                    finish = false;
-                    recreate = false;
-                    rotation = 10;
-                    xcoordinate = 0;
-                    ycoordinate = 0;
-                    double angle = 0;
-                    timeInMilliseconds = 0;
-                    applecorx = (int)(fx*(random.nextInt(644) + 483));
-                    applecory = (int)(fy*random.nextInt(428) + 100);
-                    delayfinish = 0;
-                    x = 5;
-                    Time = 1;
-                    z = 0;
-                    check = true;
-                    touch = true;
-                    flag = false;
-                    up = false;
-                    first = true;
-                    settingpress = false;
-                    bound = true;
-                    maxDegree = true;
-                    angleboolean = true;
-                    heartFrame = 0;
-                    bowFrame = 0;
-                    T = 1; // work
-
-                }
             }
 
-
-        }
     }
         handler.postDelayed(runnable, Delay);
     }
