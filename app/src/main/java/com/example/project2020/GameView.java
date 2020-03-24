@@ -74,11 +74,11 @@ public class GameView extends View {
         if(action==MotionEvent.ACTION_MOVE){
         }
         else
-        if (!(Xtouch > 0 && Xtouch < 105*fx && Ytouch > 0 && Ytouch < 106*fy)&&!settingpress) {
+        if (!(Xtouch > 0 && Xtouch < 105*fx && Ytouch > 0 && Ytouch < 106*fy)&&!settingpress&&!isShop&&gamemodedone) {
             T++;
         }
-
         else {
+            if(!isShop&&gamemodedone){
             settingpress = true;
             if(Xtouch>900*fx&&Xtouch<980*fx&&Ytouch>32*fy&&Ytouch<112*fy){
                 if(action==MotionEvent.ACTION_UP)
@@ -96,6 +96,7 @@ public class GameView extends View {
             }
 
         }
+        }
         if(T%3==0){
             flag=true;
 
@@ -106,6 +107,36 @@ public class GameView extends View {
             touch = false;
 
         }
+        if(Xtouch>900*fx&&Xtouch<980*fx&&Ytouch>32*fy&&Ytouch<112*fy&&isShop){
+            shopex=true;
+            System.out.println("what is ");
+            if(action==MotionEvent.ACTION_UP)
+                isShop=false;
+        }
+        if(Xtouch>(width)* fx/ 2-100*fx&&Xtouch<(width)* fx/ 2+74*fx&&Ytouch>(height) * fy / 8&&Ytouch<(height) * fy / 8+100*fy&&shopex){
+            if(action==MotionEvent.ACTION_UP)
+                Gamemode=1;
+
+
+            System.out.println("gooood");
+        }
+        if(Xtouch>(width)* fx/ 2-100*fx&&Xtouch<(width)* fx/ 2+74*fx&& Ytouch>(height) * fy / 8+150*fy&&Ytouch<(height) * fy / 8+250*fy&&shopex){
+            if(action==MotionEvent.ACTION_UP)
+            Gamemode=2;
+            System.out.println("gooood");
+        }
+        if(Xtouch>(width)* fx/ 2-100*fx&&Xtouch<(width)* fx/ 2+74*fx&&Ytouch>(height) * fy / 8+300*fy&&Ytouch<(height) * fy / 8+400*fy&&shopex){
+            if(action==MotionEvent.ACTION_UP)
+            Gamemode=3;
+        }
+        if(Xtouch>(width)* fx/ 2-100*fx&&Xtouch<(width)* fx/ 2+74*fx&&Ytouch>(height) * fy / 8+450*fy&&Ytouch<(height) * fy / 8+550*fy&&shopex){
+            if(action==MotionEvent.ACTION_UP)
+                Gamemode=4;
+            shopex=false;
+            isShop=true;
+
+        }
+
         System.out.println("number  "+T);
         return true;
 
@@ -113,7 +144,7 @@ public class GameView extends View {
     }
     Random random = new Random();
     SoundPlayer soundPlayer;
-    Boolean finish=false,recreate=false,done=true,se,bm;
+    Boolean finish=false,recreate=false,done=true,se,bm,isShop=false,firstdiffi=true,shopex=false,gamemodedone=false;
     Animator animator;
     Player player ;
     Handler handler;
@@ -121,14 +152,14 @@ public class GameView extends View {
     float scalex,scaley;
     int arrowheadx,arrowheady,score=0,highscore=0;
     Runnable runnable;
-    int rotation = 10,timee,maxCombo,maxGoldEarned=0;
+    int rotation = 10,timee,maxCombo,maxGoldEarned=0,Gamemode;
     float xcoordinate=0f,ycoordinate=0f;
     double angle=0;
     Rect rect;
     Rect rect1;
     long startTime, timeInMilliseconds = 0;
     Handler customHandler = new Handler();
-    Bitmap background, apple, Bow, settings,bow, bowafter, arrow,Score,gameoverback,settingback,coin,xbutton;
+    Bitmap background, apple, Bow, settings,bow, bowafter, arrow,Score,gameoverback,settingback,coin,xbutton,shop,easy,hard,med,shopbut;
     Point point;
     Display display;
    int   applecorx = (random. nextInt(644)+483), applecory=random.nextInt(428)+100;
@@ -147,6 +178,7 @@ public class GameView extends View {
     double yspeed=0, xspeed=0, yEquation, xEquation;
     int rotateafter;
     long z = 0;
+    float scaleapplex,scaleappley;
     boolean check = true, touch = true, flag = false, up = false, first = true, settingpress = false, bound = true, maxDegree = true,angleboolean=true,finishgame=true;
     int width=1184, height=720, heartFrame = 0, bowFrame = 0, T = 1,wid,hei; // work
     Bitmap[]  heart1, heart3, heart2,number,numberscore,boxBM,boxSE;
@@ -154,12 +186,12 @@ public class GameView extends View {
     Context context;
     private MotionEvent event;
     Intent intent12;
-    public GameView(Context context,Player player) {
+    public GameView(Context context,Player player,int Gamemode) {
         super(context);
+        this.Gamemode=Gamemode;
         this.context=context;
         soundPlayer=new SoundPlayer(context);
         handler = new Handler();
-
         this.player=player;
         database = FirebaseDatabase.getInstance();
         PlayerInfo= database.getReference("PlayersInfo");
@@ -190,6 +222,7 @@ public class GameView extends View {
         ground = height - 200;
         rect = new Rect(0, 0, wid, hei);
         rect1 = new Rect(10, 10, width, height);
+        shopbut =BitmapFactory.decodeResource(context.getResources(), R.drawable.shopbut);
         bow =BitmapFactory.decodeResource(getResources(), R.drawable.bow);
         bowafter = BitmapFactory.decodeResource(getResources(), R.drawable.bowbow);
         arrow =  BitmapFactory.decodeResource(getResources(), R.drawable.cropped);
@@ -203,6 +236,10 @@ public class GameView extends View {
         numberscore=new Bitmap[10];
         bm=player.isBK();
         se=player.isSE();
+        easy = BitmapFactory.decodeResource(getResources(), R.drawable.easy);
+        hard = BitmapFactory.decodeResource(getResources(), R.drawable.hard);
+        med = BitmapFactory.decodeResource(getResources(), R.drawable.med);
+        shop = BitmapFactory.decodeResource(getResources(), R.drawable.shop);
         settings = BitmapFactory.decodeResource(getResources(), R.drawable.finalsettingsbutton);
         settingback=BitmapFactory.decodeResource(getResources(),R.drawable.settings);
         gameoverback= BitmapFactory.decodeResource(getResources(),R.drawable.gameover);
@@ -250,6 +287,62 @@ public class GameView extends View {
         int arrowwidth = options.outWidth;
 
         canvas.drawBitmap(background, null, rect, null);
+       switch (Gamemode){
+            case 1:
+                gamemodedone=true;
+                if(firstdiffi)
+                heartnum=3;
+                firstdiffi=false;
+                scaleapplex=1.25f*scalex;
+                System.out.println("explain"+scaleapplex);
+                scaleappley=1.25f*scaley;
+                break;
+            case 2:
+                gamemodedone=true;
+                if(firstdiffi)
+                heartnum=2;
+                firstdiffi=false;
+                scaleappley=scalex;
+                scaleapplex=scaley;
+                break;
+            case 3:
+                gamemodedone=true;
+                if(firstdiffi)
+                heartnum=1;
+                firstdiffi=false;
+                scaleapplex=0.75f*scalex;
+                scaleappley=0.75f*scaley;
+                break;
+            case 4:
+
+                if(!shopex){
+                    matrixglobal.setTranslate(130*fx,25*fy);
+                    matrixglobal.postScale(scalex,scaley,130*fx,25*fy);
+                    canvas.drawBitmap(shop,matrixglobal,null);
+                    isShop=true;
+                    matrixglobal.setTranslate(900*fx,32*fy);
+                    matrixglobal.postScale(scalex,scaley,900*fx,32*fy);
+                    canvas.drawBitmap(xbutton,matrixglobal,null);
+                }
+                //
+                if(shopex) {
+                    matrixglobal.setTranslate(width * fx / 2-100*fx, height * fy / 8);
+                    matrixglobal.postScale(scalex, scaley, width * fx / 2-100*fx, height * fy / 8);
+                    canvas.drawBitmap(easy, matrixglobal, null);
+                    matrixglobal.setTranslate((width) * fx / 2-100*fx, (height) * fy / 8+150*fy);
+                    matrixglobal.postScale(scalex, scaley, (width) * fx / 2-100*fx, (height) * fy / 8+150*fy);
+                    canvas.drawBitmap(med, matrixglobal, null);
+                    matrixglobal.setTranslate((width) * fx / 2-100*fx, (height ) * fy / 8+300*fy);
+                    matrixglobal.postScale(scalex, scaley, (width) * fx / 2-100*fx, (height ) * fy / 8+300*fy);
+                    canvas.drawBitmap(hard, matrixglobal, null);
+                    matrixglobal.setTranslate((width)* fx/ 2-100*fx, (height ) * fy / 8+450*fy);
+                    matrixglobal.postScale(scalex, scaley, (width) * fx / 2-100*fx, (height ) * fy / 8+450*fy);
+                    canvas.drawBitmap(shopbut, matrixglobal, null);
+                }
+
+        }
+        System.out.println(gamemodedone);
+        if(gamemodedone){
         matrixglobal.setTranslate(0,0);
         matrixglobal.postScale(scalex,scaley,0,0);
         canvas.drawBitmap(settings, matrixglobal, null);
@@ -271,6 +364,7 @@ public class GameView extends View {
                 matrixglobal.setTranslate(390*fx, 15*fy);
                 matrixglobal.postScale(scalex,scaley,390*fx, 15*fy);
                 canvas.drawBitmap(number[0], matrixglobal, null);
+                System.out.println("hi");
                 break;
             case 2:
                 matrixglobal.setTranslate(390*fx, 15*fy);
@@ -363,7 +457,7 @@ public class GameView extends View {
                 highscore=score;
                 if(score<player.getHighScore())
                     highscore=player.getHighScore();
-                updatedata(player.getUsername(),new Player(player.getUsername(),player.getNumberOfGames()+1,0,maxGoldEarned,maxCombo,player.getCurrentGold()+score/10,highscore));
+                updatedata(player.getUsername(),new Player(player.getUsername(),player.getNumberOfGames()+1,0,maxGoldEarned,maxCombo,player.getCurrentGold()+(score/10),highscore));
                     done =false;}
                 switch (String.valueOf(score).length()) {
                     case 1:
@@ -517,70 +611,71 @@ public class GameView extends View {
         }
         Random random = new Random();
         if (finishgame) {
-            if(!settingpress){
-            if (!((arrowheady > (applecory - 30*fx) && arrowheady < (applecory +60*fy ))&& (arrowheadx > (applecorx - 25*fx) && arrowheadx < (applecorx + 55*fx) ))&& appleboolean) {
-                matrixglobal.setTranslate(applecorx,applecory);
-                matrixglobal.postScale(scalex,scaley,applecorx,applecory);
-                canvas.drawBitmap(apple, matrixglobal, null);
-
-            } else {
-                if (appleboolean == true&&se) {
-                    soundPlayer.playHitSound();
+            if (!settingpress) {
+                if (!((arrowheady > (applecory - 30 *scaleappley) && arrowheady < (applecory + 60 *scaleappley)) && (arrowheadx > (applecorx - 25 *scaleapplex) && arrowheadx < (applecorx + 55 *scaleapplex))) && appleboolean) {
+                    matrixglobal.setTranslate(applecorx, applecory);
+                    matrixglobal.postScale(scaleapplex, scaleappley, applecorx, applecory);
+                    canvas.drawBitmap(apple, matrixglobal, null);
+                    System.out.println(scaleapplex+" "+scaleappley+" "+applecorx+" "+applecory+" "+appleboolean);
+                } else {
+                    if (appleboolean == true && se) {
+                        soundPlayer.playHitSound();
+                    }
+                    appleboolean = false;
                 }
-                appleboolean = false;
-            }
+                System.out.println(scaleapplex+" "+scaleappley+" "+applecorx+" "+applecory+" "+appleboolean);
       /* canvas.drawBitmap(black,width/3+41,height/2+44,null);
        canvas.drawBitmap(black,width /3,height/2+44,null);
       canvas.drawBitmap(black,width/3,height / 2,null);
         canvas.drawBitmap(black,width/3+41,height / 2,null);*/
-            if (touch == true) {
-                Matrix matrix = new Matrix();
-                if (rotation == -47) {
-                    maxDegree = true;
-                }
-                if (rotation == 46)
-                    maxDegree = false;
-                if (!flag) {
-                    if (maxDegree && rotation < 46) {
-                        matrix.postRotate(rotation, bow.getWidth() / 2, bow.getHeight() / 2);
-                        rotation += 3;
+                if (touch == true) {
+                    Matrix matrix = new Matrix();
+                    if (rotation == -47) {
+                        maxDegree = true;
                     }
+                    if (rotation == 46)
+                        maxDegree = false;
+                    if (!flag) {
+                        if (maxDegree && rotation < 46) {
+                            matrix.postRotate(rotation, bow.getWidth() / 2, bow.getHeight() / 2);
+                            rotation += 3;
+                        }
 
-                    if (!maxDegree && rotation > -48) {
-                        matrix.postRotate(rotation, bow.getWidth() / 2, bow.getHeight() / 2);
-                        rotation -= 3;
+                        if (!maxDegree && rotation > -48) {
+                            matrix.postRotate(rotation, bow.getWidth() / 2, bow.getHeight() / 2);
+                            rotation -= 3;
+                        }
+                    } else {
+                        matrix.postRotate(rotation, (bow.getWidth() / 2), bow.getHeight() / 2);
                     }
-                } else {
-                    matrix.postRotate(rotation, (bow.getWidth() / 2), bow.getHeight() / 2);
+                    matrix.postTranslate((width / 9 - bow.getWidth() / 2) * fx, (height * 16 / 32 - bow.getHeight() / 2) * fy);
+                    matrix.postScale(scalex, scaley, (width / 9 - bow.getWidth() / 2) * fx, (height * 16 / 32 - bow.getHeight() / 2) * fy);
+                    canvas.drawBitmap(bow, matrix, null);
                 }
-                matrix.postTranslate((width / 9 - bow.getWidth() / 2)*fx, (height * 16 / 32 - bow.getHeight() / 2)*fy);
-                matrix.postScale(scalex,scaley,(width / 9 - bow.getWidth() / 2)*fx, (height * 16 / 32 - bow.getHeight() / 2)*fy);
-                canvas.drawBitmap(bow, matrix, null);
-            }
 
-            if (up&&T % 5 == 0) {
-                System.out.println("potasharmota "+z);
-                if (first) {
-                    pressTime = z;
-                    if (pressTime > 1000)
-                        pressTime = 1;
-                    else {
-                        pressTime = pressTime / 1000;
+                if (up && T % 5 == 0) {
+                    System.out.println("potasharmota " + z);
+                    if (first) {
+                        pressTime = z;
+                        if (pressTime > 1000)
+                            pressTime = 1;
+                        else {
+                            pressTime = pressTime / 1000;
+                        }
                     }
-                }
-                if (z != 0)
-                    first = false;
-                if (bound) {
-                    bound = false;
+                    if (z != 0)
+                        first = false;
+                    if (bound) {
+                        bound = false;
 
-                }
-                System.out.println("wtf? :"+pressTime);
-                rotateafter = rotation;
+                    }
+                    System.out.println("wtf? :" + pressTime);
+                    rotateafter = rotation;
 
-                if (angleboolean) {
-                    yspeed = ((pressTime * Math.sin(Math.toRadians(rotateafter)) * -Speed - (Time * 0.9))*fy);
-                    xspeed = ((pressTime * Math.cos(Math.toRadians(rotateafter)) * Speed * 1.65)*fx);
-                }
+                    if (angleboolean) {
+                        yspeed = ((pressTime * Math.sin(Math.toRadians(rotateafter)) * -Speed - (Time * 0.9)) * fy);
+                        xspeed = ((pressTime * Math.cos(Math.toRadians(rotateafter)) * Speed * 1.65) * fx);
+                    }
 
                     Matrix matrixafter = new Matrix();
                     matrixafter.postRotate(rotateafter, bow.getWidth() / 2, bow.getHeight() / 2);
@@ -637,41 +732,8 @@ public class GameView extends View {
                     } else {
                         finish = true;
                     }
-                   /*  if (arrow1.isA()) {
-                        xcoordinate = arrow1.x;
-                        ycoordinate = 0;//canvas.getHeight()-(float)(Math.sin(arrow1.Angle)*arrowwidth*density);
-                    } else {
 
 
-                        if (arrow1.isB()) {
-                            ycoordinate = arrow1.y;
-                            xcoordinate = canvas.getWidth() - arrowwidth*density;
-                        }*//* else {
-
-                            float ydiff = Math.abs(ycoordinate - canvas.getHeight() - arrowheight - 110);
-                            float xdiff = Math.abs(xcoordinate - canvas.getWidth() - arrowwidth - 50);
-                            if (ydiff > xdiff) {
-                                xcoordinate = canvas.getWidth() - arrowwidth - 50;
-                                if (firsttime && ydiff > 100) {
-                                    firsttime = false;
-                                    ycoordinate += (int) ((arrow1.y + arrow1.getySpeed()) * 0.05);
-                                    angle += (angle / Math.abs(angle)) * 5;
-                                }
-
-
-                            } else {
-                                ycoordinate = canvas.getHeight() - arrowheight - 90;
-                                if (firsttime && xdiff > 100) {
-                                    firsttime = false;
-                                    xcoordinate += Math.abs(arrow1.xSpeed * (arrow1.Time)) * 0.1;
-                                    angle += (angle / Math.abs(angle)) * 5;
-                                }
-
-
-                            }
-                        }
-                    )
-                }*/
                     arrowheady = (int) (arrow1.y + (int) (2 * Math.sqrt(Math.pow(56, 2) + Math.pow(19, 2)) * Math.sin(Math.toRadians(arrow1.getAngle()))));
                     arrowheadx = (int) (arrow1.x + (int) (2 * Math.sqrt(Math.pow(56, 2) + Math.pow(19, 2)) * Math.cos(Math.toRadians(arrow1.getAngle()))));
 
@@ -686,7 +748,7 @@ public class GameView extends View {
                                 heartnum--;
                             combo = 0;
                         } else {
-                            score += 10;
+                            score += 10*Gamemode;
                             combo++;
                             if (combo > maxCombo)
                                 maxCombo = combo;
@@ -723,7 +785,7 @@ public class GameView extends View {
                 }
 
             }
-
+        }
     }
         handler.postDelayed(runnable, Delay);
     }

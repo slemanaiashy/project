@@ -78,6 +78,7 @@ public class Register extends Activity {
             @Override
             public void onClick(View view) {
                 Intent Z = new Intent(getApplicationContext(),Login.class);
+                Z.putExtra("check",true);
                 startActivity(Z);
             }
         });
