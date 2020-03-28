@@ -22,7 +22,4 @@ public class SoundPlayer {
     public void playGameOver(){
         soundPool.play(gameOver,1.0f,1.0f,1,0,1.0f);
     }
-    public void playStartSound(){
-        soundPool.play(startSound,1.0f,1.0f,1,0,1.0f);
-    }
 }

@@ -11,18 +11,64 @@ public class Player {
     int longestCombo;
     int currentGold;
     int highScore;
+    int equiped;
+    boolean bow1;
+    boolean bow2;
+    boolean bow3;
+    boolean bow4;
+    boolean bow5;
     boolean SE;
     boolean BK;
 
-   public Player(String username, String password) {
-        Password = password;
-        Username=username;
+    public int getEquiped() {
+        return equiped;
     }
 
-    public Player() {
-
+    public void setEquiped(int equiped) {
+        this.equiped = equiped;
     }
- public Player(String username, String password, String email) {
+
+    public boolean isBow1() {
+        return bow1;
+    }
+
+    public void setBow1(boolean bow1) {
+        this.bow1 = bow1;
+    }
+
+    public boolean isBow2() {
+        return bow2;
+    }
+
+    public void setBow2(boolean bow2) {
+        this.bow2 = bow2;
+    }
+
+    public boolean isBow3() {
+        return bow3;
+    }
+
+    public void setBow3(boolean bow3) {
+        this.bow3 = bow3;
+    }
+
+    public boolean isBow4() {
+        return bow4;
+    }
+
+    public void setBow4(boolean bow4) {
+        this.bow4 = bow4;
+    }
+
+    public boolean isBow5() {
+        return bow5;
+    }
+
+    public void setBow5(boolean bow5) {
+        this.bow5 = bow5;
+    }
+
+    public Player(String username, String password, String email) {
         Username = username;
         Password = password;
         Email = email;
@@ -34,6 +80,12 @@ public class Player {
         highScore=0;
         BK=true;
         SE=true;
+        equiped=0;
+       bow1=true;
+        bow2=false;
+        bow3=false;
+        bow4=false;
+        bow5=false;
     }
     public Player(String username, String password, String email, int numberOfGames, int logestGame, int currentGold,int highScore) {
         Username = username;
@@ -42,6 +94,9 @@ public class Player {
         this.numberOfGames = numberOfGames;
         this.logestGame = logestGame;
         this.currentGold = currentGold;
+    }
+    public Player(){
+
     }
     public Player( String username,int numberOfGames, int logestGame, int mostGoldEarnedInSingleGame, int longestCombo, int currentGold,int highScore){
         Username = username;
@@ -78,7 +133,7 @@ public class Player {
         this.BK = BK;
     }
 
-    public Player(String username, String password, String email, int numberOfGames, int logestGame, int mostGoldEarnedInSingleGame, int longestCombo, int currentGold, int highScore, boolean BK, boolean SE) {
+    public Player(String username, String password, String email, int numberOfGames, int logestGame, int mostGoldEarnedInSingleGame, int longestCombo, int currentGold, int highScore, boolean BK, boolean SE,int equiped,boolean bow1,boolean bow2,boolean bow3,boolean bow4,boolean bow5) {
          Username = username;
          Password = password;
          Email = email;
@@ -90,6 +145,12 @@ public class Player {
          this.highScore=highScore;
          this.SE=SE;
          this.BK=BK;
+         this.equiped=equiped;
+         this.bow1=bow1;
+         this.bow2=bow2;
+         this.bow3= bow3;
+         this.bow4=bow4;
+         this.bow5=bow5;
      }
 
     public String getUsername() {

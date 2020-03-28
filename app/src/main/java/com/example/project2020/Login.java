@@ -109,7 +109,6 @@ public class Login extends AppCompatActivity {
                                 editor.putBoolean("checkbox",checked);
                                 editor.apply();
                                 System.out.println(Username+" ? "+Password+" ?? "+checked);
-                                Toast.makeText(getApplicationContext(),"username and password have been saved",Toast.LENGTH_SHORT).show();
                             }
                             else{
                                 sharedPreferences.edit().clear().apply();
@@ -131,12 +130,19 @@ public class Login extends AppCompatActivity {
                             s.putExtra("BK",player1.isBK());
                             s.putExtra("SE",player1.isSE());
                             s.putExtra("login",true);
+                            s.putExtra("equiped",player1.equiped);
+                            s.putExtra("bow1",player1.bow1);
+                            s.putExtra("bow2",player1.bow2);
+                            s.putExtra("bow3",player1.bow3);
+                            s.putExtra("bow4",player1.bow4);
+                            s.putExtra("bow5",player1.bow5);
+                            System.out.println("king: "+player1.bow3);
                             startActivity(s);
                             UsernameEdit.getText().clear();
                             PasswordEdit.getText().clear();
                         }
                         else{
-                            Toast.makeText(Login.this,"WrongPassword",Toast.LENGTH_LONG).show();
+                            Toast.makeText(Login.this,"WrongPassword",Toast.LENGTH_SHORT).show();
                         }
                     }
                 }

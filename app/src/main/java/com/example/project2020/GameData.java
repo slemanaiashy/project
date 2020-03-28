@@ -1,67 +1,67 @@
 package com.example.project2020;
 
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
+import android.provider.Settings;
+import android.util.Log;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.net.InterfaceAddress;
+import java.util.Map;
+
+import androidx.annotation.NonNull;
+
 public class GameData {
-    protected  double AverageGameLength;
-    protected  double AverageHoursplayedPerday;
     protected   int MostGoldEarnedInSingleGame;
     protected int longestCombo;
-    protected  String HighestGold;
+    protected  int HighestGold;
     protected int HighestScore;
 
-    public GameData() {
-         AverageGameLength=0;
-         AverageHoursplayedPerday=0;
-        MostGoldEarnedInSingleGame=0;
-        longestCombo=0;
-        HighestGold="0";
-        HighestScore=0;
-    }
-
-    public double getAverageGameLength() {
-        return AverageGameLength;
-    }
-
-    public void setAverageGameLength(double averageGameLength) {
-        AverageGameLength = averageGameLength;
-    }
-
-    public double getAverageHoursplayedPerday() {
-        return AverageHoursplayedPerday;
-    }
-
-    public void setAverageHoursplayedPerday(double averageHoursplayedPerday) {
-        AverageHoursplayedPerday = averageHoursplayedPerday;
+    public GameData(int  MostGoldEarnedInSingleGame,int longestCombo,int HighestGold,int HighestScore){
+        this.MostGoldEarnedInSingleGame=MostGoldEarnedInSingleGame;
+        this.longestCombo=longestCombo;
+        this.HighestGold=HighestGold;
+        this.HighestScore=HighestScore;
     }
 
     public int getMostGoldEarnedInSingleGame() {
         return MostGoldEarnedInSingleGame;
     }
 
-    public void setMostGoldEarnedInSingleGame(int mostGoldEarnedInSingleGame) {
-        MostGoldEarnedInSingleGame = mostGoldEarnedInSingleGame;
-    }
-
     public int getLongestCombo() {
         return longestCombo;
     }
 
-    public void setLongestCombo(int longestCombo) {
-        this.longestCombo = longestCombo;
-    }
-
-    public String getHighestGold() {
+    public int getHighestGold() {
         return HighestGold;
-    }
-
-    public void setHighestGold(String highestGold) {
-        HighestGold = highestGold;
     }
 
     public int getHighestScore() {
         return HighestScore;
     }
 
+    public void setMostGoldEarnedInSingleGame(int mostGoldEarnedInSingleGame) {
+        MostGoldEarnedInSingleGame = mostGoldEarnedInSingleGame;
+    }
+
+    public void setLongestCombo(int longestCombo) {
+        this.longestCombo = longestCombo;
+    }
+
+    public void setHighestGold(int highestGold) {
+        HighestGold = highestGold;
+    }
+
     public void setHighestScore(int highestScore) {
         HighestScore = highestScore;
     }
 }
+
+

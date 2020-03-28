@@ -49,17 +49,18 @@ public class Register extends Activity {
                             Toast.makeText(Register.this, "Username already exists!", Toast.LENGTH_SHORT).show();
                         }
                         else{
-                            if(player.getEmail().equals(""))
-                                Toast.makeText(Register.this, "Email is empty!", Toast.LENGTH_SHORT).show();
-                            if(!player.getEmail().equals("")){
-                                Toast.makeText(Register.this, "Registration complete!", Toast.LENGTH_SHORT).show();
+                            if(!player.getPassword().isEmpty()) {
+                                System.out.println(Password.getText().toString());
                                 PlayerInfo.child(player.getUsername()).setValue(player);
-                                Intent s = new Intent(getApplicationContext(),StartGame.class);
-                                s.putExtra("login",false);
-                                s.putExtra("password",player.getPassword());
-                                s.putExtra("email",player.getEmail());
-                                s.putExtra("username",player.getUsername());
+                                Intent s = new Intent(getApplicationContext(), StartGame.class);
+                                s.putExtra("login", false);
+                                s.putExtra("password", player.getPassword());
+                                s.putExtra("email", player.getEmail());
+                                s.putExtra("username", player.getUsername());
                                 startActivity(s);
+                            }
+                            else{
+                                Toast.makeText(Register.this,"Password can't be empty",Toast.LENGTH_SHORT).show();
                             }
 
                         }
